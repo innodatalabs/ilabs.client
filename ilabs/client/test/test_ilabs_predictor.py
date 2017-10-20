@@ -41,8 +41,8 @@ class TestIlabsPredictor(unittest.TestCase):
         predictor = ilabs_predictor.ILabsPredictor.init(
             domain='foo-domain', user_key=_DUMMY_USER_KEY)
 
-        with mock.patch('ilabs.client.ilabs_api.ILabsApi.feedback') as feedback:
-            predictor.feedback('my-batch-id', b'some contents')
+        with mock.patch('ilabs.client.ilabs_api.ILabsApi.upload_feedback') as feedback:
+            predictor.upload_feedback('my-batch-id', b'some contents')
 
             feedback.assert_called_once_with('foo-domain', 'my-batch-id', b'some contents')
 

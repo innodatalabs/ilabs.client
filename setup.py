@@ -32,5 +32,5 @@ setup(
     ],
     packages=[NAME],
     namespace_packages=['ilabs'],
-    install_requires=['lxml>=4.1.0']
+    install_requires=['lxml>=4.1.0', 'requests>=2.18.4']
 )

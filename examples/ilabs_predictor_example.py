@@ -15,7 +15,7 @@ evaluation of generative models. ICLR, 2016.</brs:r>
 Springer-Verlag, New York, 1986.</brs:r>
 
 </brs:b>
-'''.encode()
+'''.encode('utf-8')
 
 out = predictor(bibliography_brs, progress=print)
 print('predictor:', out)

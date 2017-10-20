@@ -15,5 +15,5 @@ Springer-Verlag, New York, 1986.'
 ]
 
 taggings, confidence = tagger(bibliography_records, progress=print)
-for tags, c in zip(taggins, confidence):
+for tags, c in zip(taggings, confidence):
     print('confidence:', c, 'tags:', tags)

@@ -19,13 +19,12 @@ class ILabsTagger:
     def __init__(self, *av, **kav):
         self.predictor = ilabs_predictor.ILabsPredictor.init(*av, **kav)
 
-    def feedback(self, batch_id, annotated_records):
+    def upload_feedback(self, filename, annotated_records):
         '''
         Sends feedback to the current domain folder.
 
         Input:
-            * batch_id - unique identifier of this batch of tagged records.
-                It is used as file name when sending file to training folder.
+            * filename - file name.
             * annotated_records - list of annotated records to send. Same
                 format as returned by "self.__call__" method.
 
@@ -34,7 +33,7 @@ class ILabsTagger:
 
         brs_xml = build_brs_from_annotated_records(annotated_records)
         binary_data = et.tostring(brs_xml, xml_declaration=True, encoding='utf-8')
-        return self.predictor.feedback(batch_id, binary_data)
+        return self.predictor.upload_feedback(filename, binary_data)
 
     def __call__(self, records, progress=None):
         '''

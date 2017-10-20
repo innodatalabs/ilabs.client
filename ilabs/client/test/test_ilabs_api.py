@@ -12,21 +12,22 @@ class TestIlabsApi(unittest.TestCase):
 
         api = ilabs_api.ILabsApi(user_key=_DUMMY_USER_KEY)
 
-        with mock.patch('ilabs.client.ilabs_api.urlopen') as urlopen, mock.patch('ilabs.client.ilabs_api.Request') as r:
+        with mock.patch('ilabs.client.ilabs_api.requests.request') as request:
             api._request('OPTIONS', 'http://www.gogole.com', b'some content',
                 content_type='test/test')
 
-            self.assertEqual(urlopen.call_count, 1)
-            r.assert_called_with(
+            self.assertEqual(request.call_count, 1)
+            request.assert_called_with(
+                'OPTIONS',
                 'http://www.gogole.com',
                 data=b'some content',
                 headers={
-                    'User-Agent': 'ILabs API client ' + __version__,
-                    'Content-Type': 'test/test',
-                    'User-Key': '0123456789',
-                    'Cache-Control': 'no-cache'
+                    b'User-Agent': b'ILabs API client ' + __version__.encode(),
+                    b'Content-Type': b'test/test',
+                    b'User-Key': b'0123456789',
+                    b'Cache-Control': b'no-cache'
                 },
-                method='OPTIONS'
+                stream=True
             )
 
     def test_ping(self):
@@ -124,10 +125,10 @@ class TestIlabsApi(unittest.TestCase):
         api = ilabs_api.ILabsApi(user_key=_DUMMY_USER_KEY)
         api._request = mock.Mock(return_value=b'{ "bytes_accepted": 8 }')
 
-        rc = api.feedback('test-domain', '000-123.xml', b'contents')
+        rc = api.upload_feedback('test-domain', '000-123.xml', b'contents')
         api._request.assert_called_once_with(
             'POST',
-            'https://api.innodatalabs.com/v1/training/test-domain/000-123.xml.xml',
+            'https://api.innodatalabs.com/v1/documents/training/test-domain/000-123.xml',
             b'contents',
             content_type='application/octet-stream')
 

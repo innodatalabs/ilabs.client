@@ -68,5 +68,5 @@ class ILabsPredictor(ilabs_api.ILabsApi):
 
         return prediction
 
-    def feedback(self, batch_id, binary_data):
-        return self.api.feedback(self._domain, batch_id, binary_data)
+    def upload_feedback(self, filename, binary_data):
+        return self.api.upload_feedback(self._domain, filename, binary_data)

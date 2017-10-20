@@ -2,11 +2,7 @@ from __future__ import absolute_import, unicode_literals
 
 import socket
 import json
-try:
-    from urllib.request import Request, urlopen
-except ImportError:
-    from urllib2 import Request
-    from urllib2 import urlopen
+import requests
 from ilabs.client.get_user_key import get_user_key
 from ilabs.client import __version__
 
@@ -20,11 +16,14 @@ class ILabsApi:
     URL_API_BASE = 'https://api.innodatalabs.com/v1'
 
     URL_PING     = URL_API_BASE + '/ping'
+
     URL_INPUT    = URL_API_BASE + '/documents/input/'
+    URL_OUTPUT   = URL_API_BASE + '/documents/output/'
+    URL_FEEDBACK = URL_API_BASE + '/documents/training/{domain}/'
+
     URL_PREDICT  = URL_API_BASE + '/reference/{domain}/{name}'
     URL_STATUS   = URL_API_BASE + '/reference/{domain}/{task_id}/status'
     URL_CANCEL   = URL_API_BASE + '/reference/{domain}/{task_id}/cancel'
-    URL_FEEDBACK = URL_API_BASE + '/training/{domain}/{batch_id}.xml'
 
     def __init__(self, user_key=None, timeout=None, user_agent=None):
         self._user_key = user_key or get_user_key()
@@ -37,20 +36,19 @@ class ILabsApi:
 
     def _request(self, method, url, data=None, content_type=None):
         headers = {
-            'User-Key'     : self._user_key,
-            'User-Agent'   : self._user_agent,
-            'Cache-Control': 'no-cache'
+            b'User-Key'     : self._user_key.encode(),
+            b'User-Agent'   : self._user_agent.encode(),
+            b'Cache-Control': b'no-cache'
         }
         if content_type is not None:
-            headers['Content-Type'] = content_type
-
-        req = Request(url,
-            method=method,
+            headers[b'Content-Type'] = content_type.encode()
+        req = requests.request(method, url,
             data=data,
-            headers= headers
+            headers= headers,
+            stream=True
         )
 
-        return urlopen(req, timeout=self._timeout).read()
+        return req.raw.read()
 
     def _post(self, url, data, content_type=None):
         return self._request('POST', url, data, content_type=content_type)
@@ -86,6 +84,7 @@ class ILabsApi:
         '''
         url = self.URL_INPUT
         if filename:
+            validate_filename(filename)
             url = self.URL_INPUT + filename
         out = self._post(url,
             data=binary_data,
@@ -96,12 +95,13 @@ class ILabsApi:
             raise RuntimeError('internal upload error: %r' % out)
         return out
 
-    def download_input(self, filename=None):
+    def download_input(self, filename):
         '''
         Downloads file from the input cloud folder.
 
         Returns binary contents of the file.
         '''
+        validate_filename(filename)
         return self.get(self.URL_INPUT + filename)
 
     def predict(self, domain, filename):
@@ -119,6 +119,7 @@ class ILabsApi:
             successfully completes)
         - version - ???
         '''
+        validate_filename(filename)
         url = self.URL_PREDICT.format(
             domain=domain,
             name=filename)
@@ -170,13 +171,10 @@ class ILabsApi:
         returned by predict() call in 'document_output_url' to retrieve
         the prediction result, instead of using this method.
         '''
-        url = self.URL_CANCEL.format(
-            domain=domain,
-            task_id=task_id)
-        out = self.get(url)
-        return json.loads(out.decode())
+        validate_filename(filename)
+        return self.get(self.URL_OUTPUT + filename)
 
-    def feedback(self, domain, batch_id, binary_data):
+    def upload_feedback(self, domain, filename, binary_data):
         '''
         Uploads file to training folder for the given "domain".
         Use it to provide prediction feedback like this:
@@ -186,9 +184,9 @@ class ILabsApi:
         - review predicted file and edit if necessary (to correct prediction mistakes)
         - upload to training folder using this method
         '''
-        url = self.URL_FEEDBACK.format(
-            domain=domain,
-            batch_id=batch_id)
+        validate_domain(domain)
+        validate_filename(filename)
+        url = self.URL_FEEDBACK.format(domain=domain) + filename
         out = self._post(url,
             data=binary_data,
             content_type='application/octet-stream')
@@ -199,3 +197,10 @@ class ILabsApi:
 
         return out
 
+def validate_domain(domain):
+    if '/' in domain or '..' in domain:
+        raise ValueError('domain can not contain slashes nor double dots: %r' % domain)
+
+def validate_filename(filename):
+    if '/' in filename or '..' in filename:
+        raise ValueError('file name can not contain slashes nor double dots: %r' % domain)

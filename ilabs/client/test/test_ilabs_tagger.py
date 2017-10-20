@@ -58,14 +58,14 @@ class TestIlabsTagger(unittest.TestCase):
             ]
         ]
 
-        result = tagger.feedback('my-file-id', annotations)
+        result = tagger.upload_feedback('my-file-id', annotations)
 
         expected_xml_text = b'''<?xml version='1.0' encoding='utf-8'?>
 <brs:b xmlns:brs="http://innodatalabs.com/brs">
 <brs:r>Hello, <brs:s l="subject">world</brs:s>!</brs:r>
 <brs:r>Bye-bye <brs:s l="subject">girl</brs:s></brs:r>
 </brs:b>'''
-        tagger.predictor.feedback.assert_called_with(
+        tagger.predictor.upload_feedback.assert_called_with(
             'my-file-id',
             expected_xml_text)
 
