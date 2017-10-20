@@ -23,9 +23,9 @@ You need `user_key` secret to access InnodataLabs API endpoints. To obtain
 You will need to pass this key to client classes explicitly or implicitly.
 
 ### Explicit authentication
-All client classes allow one to specify client key by passing it as an argument.
-For example:
+All client classes allow one to specify `user_key` by passing it as an argument.
 
+For example:
 ```
 from ilabs.client.ilabs_api import ILabsApi
 
@@ -46,8 +46,7 @@ Configuration file uses standard format of python `configparser.ConfigParser`.
 The value of `user_key` should be specified as option `ilabs_user_key` in
 section `[ilabs]`.
 
-Example is:
-
+Example of configuration file contents:
 ```
 [ilabs]
 ilabs_user_key=01234567890
