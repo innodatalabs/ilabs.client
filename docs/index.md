@@ -15,7 +15,45 @@ There are three levels of API access:
   * high level, implemented by `ILabsTagger` class,
     This one is specialized for doing dense sequence labeling.
 
-### ILabsApi
+## Authentication
+You need `user-key` secret to access InnodataLabs API endpoints. To obtain
+`user_key`, register on
+[InnodataLabs developer site](https://developer.innodatalabs.com/login).
+
+You will need to pass this key to client classes explicitly or implicitly.
+
+### Explicit authentication
+All client classes allow one to specify client key by passing it as an argument.
+For example:
+
+```
+from ilabs.client.ilabs_api import ILabsApi
+
+api = ILabsApi(user_key='1234567890')
+api.ping()
+```
+
+### Implicit authentication
+If `user_key` is not provided, client will try to look it up following this
+logic:
+
+1. Environment variable `ILABS_USER_KEY`
+2. User and system configuration files, in this order:
+  * `~/.config/ilabs/ilabs.conf`
+  * `/etc/ilabs.conf`
+
+Configuration file uses standard format of python `configparser.ConfigParser`.
+The value of `user_key` should be specified as option `ilabs_user_key` in
+section `[ilabs]`.
+
+Example is:
+
+```
+[ilabs]
+ilabs_user_key=01234567890
+```
+
+## ILabsApi
 Low-level access to the InnodataLabs API endpoints. Takes care of the
 following concerns:
 
@@ -24,19 +62,17 @@ following concerns:
 
 Example:
 ```
-api = ILabsApi(user_key='1234567890')  # use the real key here, please!
+api = ILabsApi()
 api.ping()
 ```
 
-### ILabsPredictor
+## ILabsPredictor
 Implements file-in to file-out process. Takes care of polling for the
 asynchronous job status.
 
 Example:
 ```
-predictor = ILabsPredictor.init(
-    domain='ilabs.bib',
-    user_key='0123456789')  # use the real key, please!
+predictor = ILabsPredictor.init(domain='ilabs.bib')
 
 binary_data = b'''<brs:b xmlns:brs="http://innodatalabs.com">
 <brs:r>Jack Nadeau and Mike Abukhoff, Continuous Machine Learning, \
@@ -59,13 +95,13 @@ returns parallel list of predicted annotations.
 
 Example:
 ```
-predictor = ILabsTagger(
-    domain='ilabs.bib',
-    user_key='0123456789')  # use the real key, please!
+predictor = ILabsTagger(domain='ilabs.bib')
 
 records = [
-    'Jack Nadeau and Mike Abukhoff, Continuous Machine Learning, Innodata Press, Noida, India',
-    'Bill Gates, Microsoft Kills Windows, Finally!, Private communication, 2019'
+    'Jack Nadeau and Mike Abukhoff, Continuous Machine Learning, ' + \
+        'Innodata Press, Noida, India',
+    'Bill Gates, Microsoft Kills Windows, Finally!, ' + \
+        ' Private communication, 2019'
 ]
 predicted_tagging = predictor(records, progress=print)
 
