@@ -1,6 +1,6 @@
 import unittest
 import mock
-from ilabs.client import ilabs_api
+from ilabs.client import ilabs_api, __version__
 
 
 _DUMMY_USER_KEY = '0123456789'
@@ -21,7 +21,7 @@ class TestIlabsApi(unittest.TestCase):
                 'http://www.gogole.com',
                 data=b'some content',
                 headers={
-                    'User-Agent': 'ILabs API client 0.0.1',
+                    'User-Agent': 'ILabs API client ' + __version__,
                     'Content-Type': 'test/test',
                     'User-Key': '0123456789',
                     'Cache-Control': 'no-cache'
