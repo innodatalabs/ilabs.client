@@ -16,7 +16,7 @@ There are three levels of API access:
     This one is specialized for doing dense sequence labeling.
 
 ## Authentication
-You need `user-key` secret to access InnodataLabs API endpoints. To obtain
+You need `user_key` secret to access InnodataLabs API endpoints. To obtain
 `user_key`, register on
 [InnodataLabs developer site](https://developer.innodatalabs.com/login).
 
