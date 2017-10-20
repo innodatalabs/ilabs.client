@@ -1,4 +1,7 @@
 # ilabs.client
+[![Build Status](https://travis-ci.org/innodatalabs/ilabs.client.svg?branch=master)](https://travis-ci.org/innodatalabs/ilabs.client)
+[![PyPI version](https://badge.fury.io/py/ilabs.client.svg)](https://badge.fury.io/py/ilabs.client)
+
 
 Python client to access api.innodatalabs.com endpoints.
 
