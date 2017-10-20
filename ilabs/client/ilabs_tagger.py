@@ -61,15 +61,19 @@ class ILabsTagger:
                 input record. "label" values depend on the domain. label
                 value of None is allowed and means that this text span is left
                 untagged.
+            * list of confidence scores. This list is parallel to the input
+                "records" list and provides float values of confidence.
+                Zero confidence means "not sure". Large positive confidence
+                means "very confident".
 
         Example:
 
-            output = tagger([
+            annotations, confidence = tagger([
                 'Princeton University, Princeton, NJ',
                 'Department of Defense Office, 432 Honor Lane, Arlington, VA 2345'
             ])
 
-            assert output == [
+            assert annotations == [
                 [
                     ('Princeton University', 'organization'),
                     (', ', None),
@@ -90,6 +94,7 @@ class ILabsTagger:
                 ]
             ]
 
+            assert confidence == [5.2, 0.4]
         '''
         if progress is None:
             progress = ilabs_predictor.noop
@@ -104,15 +109,16 @@ class ILabsTagger:
 
         assert len(brs_in) == len(brs_out)
 
-        predicted_records = [list(ann_from_record(r)) for r in brs_out]
+        predicted_tagging = [list(ann_from_record(r)) for r in brs_out]
+        confidence = [float(r.get('c')) if r.get('c') is not None else 0. for r in brs_out]
 
         # validate that returned records have the same text
-        for text, ann in zip(records, predicted_records):
+        for text, ann in zip(records, predicted_tagging):
             annotated_text = ''.join(txt for txt,_ in ann)
             if text != annotated_text:
                 raise RuntimeError('internal prediction error: text changed %r vs %r' % (text, annotated_text))
 
-        return predicted_records
+        return predicted_tagging, confidence
 
 
 def build_brs(records):

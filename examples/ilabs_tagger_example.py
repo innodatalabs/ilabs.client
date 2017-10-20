@@ -14,6 +14,6 @@ evaluation of generative models. ICLR, 2016.',
 Springer-Verlag, New York, 1986.'
 ]
 
-out = tagger(bibliography_records, progress=print)
-for ann in out:
-    print(ann)
+taggings, confidence = tagger(bibliography_records, progress=print)
+for tags, c in zip(taggins, confidence):
+    print('confidence:', c, 'tags:', tags)

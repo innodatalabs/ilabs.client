@@ -13,19 +13,19 @@ class TestIlabsTagger(unittest.TestCase):
 
         prediction = b'''\
 <brs:b xmlns:brs="http://innodatalabs.com/brs">
-    <brs:r>Hello, <brs:s l="subject">world</brs:s>!</brs:r>
+    <brs:r c="3.12">Hello, <brs:s l="subject">world</brs:s>!</brs:r>
     <brs:r>Bye-bye <brs:s l="subject">girl</brs:s></brs:r>
 </brs:b>
 '''
         tagger.predictor = mock.Mock(return_value=prediction)
 
         progress=mock.Mock()
-        result = tagger([
+        tags, confidence = tagger([
             'Hello, world!',
             'Bye-bye girl'
         ], progress=progress)
 
-        self.assertEqual(result, [
+        self.assertEqual(tags, [
             [
                 ('Hello, ', None),
                 ('world', 'subject'),
@@ -36,6 +36,7 @@ class TestIlabsTagger(unittest.TestCase):
                 ('girl', 'subject')
             ]
         ])
+        self.assertEqual(confidence, [3.12, 0.0])
         self.assertEqual(progress.mock_calls, [
             mock.call('created XML file from 2 records')
         ])
