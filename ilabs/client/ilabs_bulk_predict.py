@@ -67,7 +67,9 @@ def ilabs_bulk_upload(domain, input_dir, output_dir, num_workers=10, user_key=No
 def main():
     import argparse
 
-    parser = argparse.ArgumentParser(description='Sends all files from the input directory to prediction service and and places result in the output directory')
+    parser = argparse.ArgumentParser(description='Sends all files from the input '
+        'directory to prediction service and '
+        'places result in the output directory')
 
     parser.add_argument('--domain', '-d', required=True, help='Prediction domain')
     parser.add_argument('--user_key', '-u', help='Secret user key')
