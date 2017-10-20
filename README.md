@@ -17,6 +17,6 @@ nosetests ilabs/client/test
 
 ## Usage
 
-Quick start examples: http://github.com/innodatalabs/ilabs.client/examples
+Quick start examples: https://github.com/innodatalabs/ilabs.client/tree/master/examples
 
 User guide and API reference: https://innodatalabs.github.io/ilabs.client
