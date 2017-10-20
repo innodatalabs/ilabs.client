@@ -14,15 +14,12 @@ def mock_fs(files={}):
         def __enter__(self):
             return self
 
-        def _readline(self):
+        def readline(self):
             if self._current >= len(self._lines):
                 return ''
             line = self._lines[self._current]
             self._current += 1
             return line + '\n'
-
-        def readline(self):
-            return self._readline()
 
         def close(self):
             pass
