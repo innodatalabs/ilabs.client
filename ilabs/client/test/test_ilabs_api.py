@@ -12,12 +12,16 @@ class TestIlabsApi(unittest.TestCase):
 
         api = ilabs_api.ILabsApi(user_key=_DUMMY_USER_KEY)
 
-        with mock.patch('ilabs.client.ilabs_api.requests.request') as request:
+        with mock.patch('ilabs.client.ilabs_api.requests') as requests:
+            mock_response = mock.Mock()
+            mock_response.status_code = 200
+            requests.request = mock.Mock(return_value=mock_response)
+
             api._request('OPTIONS', 'http://www.gogole.com', b'some content',
                 content_type='test/test')
 
-            self.assertEqual(request.call_count, 1)
-            request.assert_called_with(
+            self.assertEqual(requests.request.call_count, 1)
+            requests.request.assert_called_with(
                 'OPTIONS',
                 'http://www.gogole.com',
                 data=b'some content',

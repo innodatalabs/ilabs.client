@@ -42,13 +42,16 @@ class ILabsApi:
         }
         if content_type is not None:
             headers[b'Content-Type'] = content_type.encode()
-        req = requests.request(method, url,
+        res = requests.request(method, url,
             data=data,
             headers= headers,
             stream=True
         )
 
-        return req.raw.read()
+        if res.status_code not in (200, 202):
+            raise RuntimeError('REST endpoint returned error: %s' % res.status_code)
+
+        return res.raw.read()
 
     def _post(self, url, data, content_type=None):
         return self._request('POST', url, data, content_type=content_type)

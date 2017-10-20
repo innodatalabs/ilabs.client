@@ -32,5 +32,10 @@ setup(
     ],
     packages=[NAME],
     namespace_packages=['ilabs'],
-    install_requires=['lxml>=4.1.0', 'requests>=2.18.4']
+    install_requires=['lxml>=4.1.0', 'requests>=2.18.4'],
+    entry_points={
+        'console_scripts': [
+            'ilabs_bulk_predict=ilabs.client.ilabs_bulk_predict:main'
+        ]
+    }
 )
