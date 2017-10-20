@@ -1,7 +1,4 @@
 from setuptools import setup
-import io
-import os
-import re
 from ilabs.client import __version__, __description__, __url__, __author__, \
     __author_email__, __keywords__
 
@@ -35,4 +32,5 @@ setup(
     ],
     packages=[NAME],
     namespace_packages=['ilabs'],
+    install_requires=['lxml>=4.1.0']
 )
