@@ -1,36 +1,18 @@
 ---
 title: ilabs.client
 ---
-# ilabs.client
-[![Build Status](https://travis-ci.org/innodatalabs/ilabs.client.svg?branch=master)](https://travis-ci.org/innodatalabs/ilabs.client)
-[![PyPI version](https://badge.fury.io/py/ilabs.client.svg)](https://badge.fury.io/py/ilabs.client)
-
-
-Python client to access api.innodatalabs.com endpoints.
-
-## Building
-
-```
-virtualenv .venv -p python3  # or python2, as appropriate
-. .venv/bin/activate
-pip install -r requirements.txt
-pip install mock nose
-
-nosetests ilabs/client/test
-```
-
-## Usage
+[API reference](api)
 
 There are three levels of API access:
 
-  * low level, implemented by `ilabs.client.ilabs_api.ILabsApi` class. It
+  * low level, implemented by `ILabsApi` class. It
     pretty much mirrors the REST endpoints as documented on [InnodataLabs
     website](http://developer.innodatalabs.com).
   * intermediate level, implemented by
-    `ilabs.client.ilabs_predictor.ILabsPredctor` class. This class can
+    `ILabsPredctor` class. This class can
     be used to do a file-in => file-out prediction. Most (but not all)
     InnodataLabs endpoints provide this type of prediction.
-  * high level, implemented by `ilabs.client.ilabs_tagger.ILabsTagger` class,
+  * high level, implemented by `ILabsTagger` class,
     This one is specialized for doing dense sequence labeling.
 
 ### ILabsApi
