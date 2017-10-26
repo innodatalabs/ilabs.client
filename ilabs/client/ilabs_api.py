@@ -20,8 +20,14 @@ def send_request(method, url, data=None, headers=None):
 
     # ugly!
     if sys.version_info[0] < 3:
-        url = url.decode()
+        url = url.encode()
+        if headers is not None:
+            headers = {
+                key.encode(): val.encode() 
+                for key, val in headers.items()
+            }
 
+    print('sending headers:', headers)
     return urlopen(Request(url, headers=headers, data=data))
 
 def noop(*av, **kav): pass
@@ -33,17 +39,17 @@ class ILabsApi:
 
     URL_API_BASE = 'https://api.innodatalabs.com/v1'
 
-    URL_PING     = URL_API_BASE + '/ping'
-
-    URL_INPUT    = URL_API_BASE + '/documents/input/'
-    URL_OUTPUT   = URL_API_BASE + '/documents/output/'
-    URL_FEEDBACK = URL_API_BASE + '/documents/training/{domain}/'
-
-    URL_PREDICT  = URL_API_BASE + '/reference/{domain}/{name}'
-    URL_STATUS   = URL_API_BASE + '/reference/{domain}/{task_id}/status'
-    URL_CANCEL   = URL_API_BASE + '/reference/{domain}/{task_id}/cancel'
-
     def __init__(self, user_key=None, timeout=None, user_agent=None):
+        self.URL_PING     = self.URL_API_BASE + '/ping'
+
+        self.URL_INPUT    = self.URL_API_BASE + '/documents/input/'
+        self.URL_OUTPUT   = self.URL_API_BASE + '/documents/output/'
+        self.URL_FEEDBACK = self.URL_API_BASE + '/documents/training/{domain}/'
+
+        self.URL_PREDICT  = self.URL_API_BASE + '/reference/{domain}/{name}'
+        self.URL_STATUS   = self.URL_API_BASE + '/reference/{domain}/{task_id}/status'
+        self.URL_CANCEL   = self.URL_API_BASE + '/reference/{domain}/{task_id}/cancel'
+
         self._user_key = user_key or get_user_key()
         if self._user_key is None:
             raise RuntimeError('Could not find credentials')
@@ -54,12 +60,12 @@ class ILabsApi:
 
     def _request(self, method, url, data=None, content_type=None):
         headers = {
-            b'User-Key'     : self._user_key.encode(),
-            b'User-Agent'   : self._user_agent.encode(),
-            b'Cache-Control': b'no-cache'
+            'User-Key'     : self._user_key,
+            'User-Agent'   : self._user_agent,
+            'Cache-Control': 'no-cache'
         }
         if content_type is not None:
-            headers[b'Content-Type'] = content_type.encode()
+            headers['Content-Type'] = content_type
         res = send_request(method, url,
             data=data,
             headers= headers
