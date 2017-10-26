@@ -26,10 +26,10 @@ class TestIlabsApi(unittest.TestCase):
                 'http://www.gogole.com',
                 data=b'some content',
                 headers={
-                    b'User-Agent': b'ILabs API client ' + __version__.encode(),
-                    b'Content-Type': b'test/test',
-                    b'User-Key': b'0123456789',
-                    b'Cache-Control': b'no-cache'
+                    'User-Agent': 'ILabs API client ' + __version__,
+                    'Content-Type': 'test/test',
+                    'User-Key': '0123456789',
+                    'Cache-Control': 'no-cache'
                 }
             )
 
