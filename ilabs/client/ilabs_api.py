@@ -23,11 +23,10 @@ def send_request(method, url, data=None, headers=None):
         url = url.encode()
         if headers is not None:
             headers = {
-                key.encode(): val.encode() 
+                key.encode(): val.encode()
                 for key, val in headers.items()
             }
 
-    print('sending headers:', headers)
     return urlopen(Request(url, headers=headers, data=data))
 
 def noop(*av, **kav): pass
