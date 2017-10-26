@@ -1,10 +1,28 @@
 from __future__ import absolute_import, unicode_literals
 
+import sys
 import socket
 import json
-import requests
 from ilabs.client.get_user_key import get_user_key
 from ilabs.client import __version__
+
+try:
+    from urllib2 import Request, urlopen
+except ImportError:
+    from urllib.request import Request, urlopen
+
+def send_request(method, url, data=None, headers=None):
+    assert method in ('GET', 'POST')
+    if data is not None:
+        assert method == 'POST'
+    else:
+        assert method == 'GET'
+
+    # ugly!
+    if sys.version_info[0] < 3:
+        url = url.decode()
+
+    return urlopen(Request(url, headers=headers, data=data))
 
 def noop(*av, **kav): pass
 
@@ -42,16 +60,15 @@ class ILabsApi:
         }
         if content_type is not None:
             headers[b'Content-Type'] = content_type.encode()
-        res = requests.request(method, url,
+        res = send_request(method, url,
             data=data,
-            headers= headers,
-            stream=True
+            headers= headers
         )
 
-        if res.status_code not in (200, 202):
-            raise RuntimeError('REST endpoint returned error: %s' % res.status_code)
+        if res.getcode() not in (200, 202):
+            raise RuntimeError('REST endpoint returned error: %s' % res.getcode())
 
-        return res.raw.read()
+        return res.read()
 
     def _post(self, url, data, content_type=None):
         return self._request('POST', url, data, content_type=content_type)
