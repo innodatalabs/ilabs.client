@@ -25,7 +25,7 @@ User guide and API reference: https://innodatalabs.github.io/ilabs.client
 
 This package also provides a CLI tool to run file-to-file prediction in bulk:
 ```
-ilabs_bilk_predict -h
+ilabs_bulk_predict -h
 
 usage: ilabs_bulk_predict [-h] --domain DOMAIN [--user_key USER_KEY]
 
