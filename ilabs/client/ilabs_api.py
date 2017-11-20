@@ -1,10 +1,33 @@
 from __future__ import absolute_import, unicode_literals
 
+import sys
 import socket
 import json
-import requests
 from ilabs.client.get_user_key import get_user_key
 from ilabs.client import __version__
+
+try:
+    from urllib2 import Request, urlopen
+except ImportError:
+    from urllib.request import Request, urlopen
+
+def send_request(method, url, data=None, headers=None):
+    assert method in ('GET', 'POST')
+    if data is not None:
+        assert method == 'POST'
+    else:
+        assert method == 'GET'
+
+    # ugly!
+    if sys.version_info[0] < 3:
+        url = url.encode()
+        if headers is not None:
+            headers = {
+                key.encode(): val.encode()
+                for key, val in headers.items()
+            }
+
+    return urlopen(Request(url, headers=headers, data=data))
 
 def noop(*av, **kav): pass
 
@@ -15,17 +38,17 @@ class ILabsApi:
 
     URL_API_BASE = 'https://api.innodatalabs.com/v1'
 
-    URL_PING     = URL_API_BASE + '/ping'
-
-    URL_INPUT    = URL_API_BASE + '/documents/input/'
-    URL_OUTPUT   = URL_API_BASE + '/documents/output/'
-    URL_FEEDBACK = URL_API_BASE + '/documents/training/{domain}/'
-
-    URL_PREDICT  = URL_API_BASE + '/reference/{domain}/{name}'
-    URL_STATUS   = URL_API_BASE + '/reference/{domain}/{task_id}/status'
-    URL_CANCEL   = URL_API_BASE + '/reference/{domain}/{task_id}/cancel'
-
     def __init__(self, user_key=None, timeout=None, user_agent=None):
+        self.URL_PING     = self.URL_API_BASE + '/ping'
+
+        self.URL_INPUT    = self.URL_API_BASE + '/documents/input/'
+        self.URL_OUTPUT   = self.URL_API_BASE + '/documents/output/'
+        self.URL_FEEDBACK = self.URL_API_BASE + '/documents/training/{domain}/'
+
+        self.URL_PREDICT  = self.URL_API_BASE + '/reference/{domain}/{name}'
+        self.URL_STATUS   = self.URL_API_BASE + '/reference/{domain}/{task_id}/status'
+        self.URL_CANCEL   = self.URL_API_BASE + '/reference/{domain}/{task_id}/cancel'
+
         self._user_key = user_key or get_user_key()
         if self._user_key is None:
             raise RuntimeError('Could not find credentials')
@@ -36,22 +59,21 @@ class ILabsApi:
 
     def _request(self, method, url, data=None, content_type=None):
         headers = {
-            b'User-Key'     : self._user_key.encode(),
-            b'User-Agent'   : self._user_agent.encode(),
-            b'Cache-Control': b'no-cache'
+            'User-Key'     : self._user_key,
+            'User-Agent'   : self._user_agent,
+            'Cache-Control': 'no-cache'
         }
         if content_type is not None:
-            headers[b'Content-Type'] = content_type.encode()
-        res = requests.request(method, url,
+            headers['Content-Type'] = content_type
+        res = send_request(method, url,
             data=data,
-            headers= headers,
-            stream=True
+            headers= headers
         )
 
-        if res.status_code not in (200, 202):
-            raise RuntimeError('REST endpoint returned error: %s' % res.status_code)
+        if res.getcode() not in (200, 202):
+            raise RuntimeError('REST endpoint returned error: %s' % res.getcode())
 
-        return res.raw.read()
+        return res.read()
 
     def _post(self, url, data, content_type=None):
         return self._request('POST', url, data, content_type=content_type)
