@@ -88,7 +88,7 @@ def main():
 
     args = parser.parse_args()
 
-    ilabs_bulk_upload(args.domain, args.input_dir, args.output_dir, args.num_workers, args.user_key)
+    ilabs_bulk_upload(args.domain, args.input_dir, args.output_dir, args.num_workers, args.user_key, args.strip_labels)
 
 if __name__ == '__main__':
     main()
