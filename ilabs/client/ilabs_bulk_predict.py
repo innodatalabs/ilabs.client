@@ -1,13 +1,13 @@
 from __future__ import print_function, absolute_import, unicode_literals
 import glob
 import os
-import random
 import multiprocessing
 import lxml.etree as et
 from ilabs.client.ilabs_predictor import ILabsPredictor
 
 
 BRS_S = '{http://innodatalabs.com/brs}s'  # BRS label tag from BRS specs
+
 
 def predict_file(args):
     '''
@@ -23,7 +23,11 @@ def predict_file(args):
             if strip_labels:
                 xml = et.fromstring(input_bytes)
                 et.strip_tags(xml, BRS_S)
-                input_bytes = et.tostring(xml, xml_declaration=True, encoding='utf-8')
+                input_bytes = et.tostring(
+                    xml,
+                    xml_declaration=True,
+                    encoding='utf-8'
+                )
 
         output_bytes = predictor(input_bytes)
 
@@ -32,6 +36,7 @@ def predict_file(args):
 
     except RuntimeError as e:
         return e
+
 
 def missing_files(input_dir, output_dir):
     '''
@@ -50,14 +55,23 @@ def missing_files(input_dir, output_dir):
 
     return sorted(input_names - output_names)
 
-def ilabs_bulk_upload(domain, input_dir, output_dir, num_workers=10, user_key=None, strip_labels=False):
+
+def ilabs_bulk_upload(
+    domain,
+    input_dir,
+    output_dir,
+    num_workers=10,
+    user_key=None,
+    strip_labels=False
+):
 
     fileset = missing_files(input_dir, output_dir)
     if not fileset:
         return
 
     jobs = [
-        (domain, os.path.join(input_dir, x), os.path.join(output_dir, x), user_key, strip_labels)
+        (domain, os.path.join(input_dir, x),
+            os.path.join(output_dir, x), user_key, strip_labels)
         for x in fileset
     ]
 
@@ -71,24 +85,39 @@ def ilabs_bulk_upload(domain, input_dir, output_dir, num_workers=10, user_key=No
     for error, filename in zip(results, fileset):
         print(filename, error or 'OK')
 
+
 def main():
     import argparse
 
-    parser = argparse.ArgumentParser(description='Sends all files from the input '
-        'directory to prediction service and '
-        'places result in the output directory')
+    parser = argparse.ArgumentParser(
+        description='Sends all files from the input '
+                    'directory to prediction service and '
+                    'places result in the output directory')
 
-    parser.add_argument('--domain', '-d', required=True, help='Prediction domain')
+    parser.add_argument('--domain', '-d', required=True,
+                        help='Prediction domain')
     parser.add_argument('--user_key', '-u', help='Secret user key')
     parser.add_argument('--strip_labels', '-s', action='store_true',
-        help='If set, assumes that files are BRS and strips off <brs:s> labels before sending')
-    parser.add_argument('input_dir', help='Directory where input files are located')
-    parser.add_argument('output_dir', help='Directory where output will be saved')
-    parser.add_argument('--num_workers', '-n', type=int, default=10, help='Number of concurrent workers')
+                        help='If set, assumes that files are BRS and '
+                        'strips off <brs:s> labels before sending')
+    parser.add_argument('input_dir',
+                        help='Directory where input files are located')
+    parser.add_argument('output_dir',
+                        help='Directory where output will be saved')
+    parser.add_argument('--num_workers', '-n', type=int, default=10,
+                        help='Number of concurrent workers')
 
     args = parser.parse_args()
 
-    ilabs_bulk_upload(args.domain, args.input_dir, args.output_dir, args.num_workers, args.user_key, args.strip_labels)
+    ilabs_bulk_upload(
+        args.domain,
+        args.input_dir,
+        args.output_dir,
+        args.num_workers,
+        args.user_key,
+        args.strip_labels
+    )
+
 
 if __name__ == '__main__':
     main()
