@@ -3,6 +3,7 @@ from __future__ import absolute_import, unicode_literals
 from ilabs.client import ilabs_api
 import time
 import json
+import logging
 
 def noop(*av, **kav): pass
 
@@ -43,6 +44,7 @@ class ILabsPredictor(ilabs_api.ILabsApi):
                     time.sleep(1.0)
                     progress('retrying in: %s' % (count_idx+1))
 
+                logging.info('Requesting status at %s', task_status_url)
                 response = self.api.get(task_status_url)
                 out = json.loads(response.decode())
                 assert out is not None, response
@@ -56,6 +58,7 @@ class ILabsPredictor(ilabs_api.ILabsApi):
             task_cancel_url = None
         finally:
             if task_cancel_url is not None:
+                logging.info('Cancelling job at %s', task_cancel_url)
                 self.api.get(task_cancel_url)
 
         err = out.get('error')
@@ -63,6 +66,7 @@ class ILabsPredictor(ilabs_api.ILabsApi):
             raise RuntimeError('Prediction server returned error: ' + err)
 
         progress('fetching result')
+        logging.info('Downloading from: %s', document_output_url)
         prediction = self.api.get(document_output_url)
         progress('downloaded %s bytes' % len(prediction))
 

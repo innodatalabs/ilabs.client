@@ -4,17 +4,16 @@ import os
 import multiprocessing
 import lxml.etree as et
 from ilabs.client.ilabs_predictor import ILabsPredictor
+import logging
 
 
 BRS_S = '{http://innodatalabs.com/brs}s'  # BRS label tag from BRS specs
 
 
-def predict_file(args):
+def predict_file(domain, input_filename, output_filename, user_key, strip_labels):
     '''
     Executes prediction on a file content, and saves result to output file
     '''
-    domain, input_filename, output_filename, user_key, strip_labels = args
-
     predictor = ILabsPredictor.init(domain, user_key=user_key)
 
     try:
@@ -58,32 +57,53 @@ def missing_files(input_dir, output_dir):
 
 def ilabs_bulk_upload(
     domain,
-    input_dir,
-    output_dir,
-    num_workers=10,
+    input,
+    output,
     user_key=None,
-    strip_labels=False
+    strip_labels=False,
+    verbose=0
 ):
+    if verbose == 1:
+        logging.basicConfig(level=logging.INFO)
+    elif verbose > 1:
+        logging.basicConfig(level=logging.DEBUG)
 
-    fileset = missing_files(input_dir, output_dir)
+    if os.path.isfile(input):
+        if os.path.isdir(output):
+            raise RuntimeError('When input is a single file, output is expected to be a file too. But its a directory: ' + output)
+        elif os.path.isfile(output):
+            print('Output file exists, nothing to do: ' + output)
+            return
+
+        error = predict_file(domain, input, output, user_key, strip_labels)
+        print(os.path.basename(output), error or 'OK')
+
+        return
+
+    if not os.path.isdir(input):
+        raise RuntimeError('Input file/directory does not exist: ' + input)
+
+    if os.path.isfile(output):
+        raise RuntimeError('When input is directory, output is expected to be a directory. But its a file: ' + output)
+
+    if not os.path.exists(output):
+        os.mkdir(output)
+        print('Created output directory: ' + output)
+
+    fileset = missing_files(input, output)
     if not fileset:
         return
 
-    jobs = [
-        (domain, os.path.join(input_dir, x),
-            os.path.join(output_dir, x), user_key, strip_labels)
-        for x in fileset
-    ]
+    for fname in fileset:
+        error = predict_file(
+            domain,
+            os.path.join(input, fname),
+            os.path.join(output, fname),
+            user_key,
+            strip_labels
+        )
 
-    if num_workers > 1:
-        pool = multiprocessing.Pool(num_workers)
-        results = pool.map(predict_file, jobs)
-        pool.close()
-    else:
-        results = map(predict_file, jobs)
-
-    for error, filename in zip(results, fileset):
-        print(filename, error or 'OK')
+        print(fname, error or 'OK')
 
 
 def main():
@@ -97,26 +117,19 @@ def main():
     parser.add_argument('--domain', '-d', required=True,
                         help='Prediction domain')
     parser.add_argument('--user_key', '-u', help='Secret user key')
+    parser.add_argument('input',
+                        help='Input file or directory')
+    parser.add_argument('output',
+                        help='Output file or directory')
     parser.add_argument('--strip_labels', '-s', action='store_true',
                         help='If set, assumes that files are BRS and '
                         'strips off <brs:s> labels before sending')
-    parser.add_argument('input_dir',
-                        help='Directory where input files are located')
-    parser.add_argument('output_dir',
-                        help='Directory where output will be saved')
-    parser.add_argument('--num_workers', '-n', type=int, default=10,
-                        help='Number of concurrent workers')
+    parser.add_argument('--verbose', '-v', action='count', default=0,
+                        help='Increases verbosity. Use multiple times to get even more verbose')
 
     args = parser.parse_args()
 
-    ilabs_bulk_upload(
-        args.domain,
-        args.input_dir,
-        args.output_dir,
-        args.num_workers,
-        args.user_key,
-        args.strip_labels
-    )
+    ilabs_bulk_upload(**args.__dict__)
 
 
 if __name__ == '__main__':
