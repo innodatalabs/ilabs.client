@@ -5,6 +5,7 @@ import socket
 import json
 from ilabs.client.get_user_key import get_user_key
 from ilabs.client import __version__
+import logging
 
 try:
     from urllib2 import Request, urlopen
@@ -12,6 +13,7 @@ except ImportError:
     from urllib.request import Request, urlopen
 
 def send_request(method, url, data=None, headers=None):
+    logging.debug('%s %s', method, url)
     assert method in ('GET', 'POST')
     if data is not None:
         assert method == 'POST'
@@ -107,6 +109,7 @@ class ILabsApi:
         - bytes_accepted  - number of bytes in the uploaded file
         - input_filename  - the name of the file
         '''
+        logging.info('Uploading as filename=%s', filename)
         url = self.URL_INPUT
         if filename:
             validate_filename(filename)
@@ -126,6 +129,7 @@ class ILabsApi:
 
         Returns binary contents of the file.
         '''
+        logging.info('Downloading input: %s', filename)
         validate_filename(filename)
         return self.get(self.URL_INPUT + filename)
 
@@ -144,6 +148,7 @@ class ILabsApi:
             successfully completes)
         - version - ???
         '''
+        logging.info('Trigger prediction job: domain=%s, filename=%s', domain, filename)
         validate_filename(filename)
         url = self.URL_PREDICT.format(
             domain=domain,
@@ -168,6 +173,8 @@ class ILabsApi:
         - message - [optional] contains progress message
         '''
 
+        logging.info('Status query for job %s', task_id)
+
         url = self.URL_STATUS.format(
             domain=domain,
             task_id=task_id)
@@ -182,6 +189,8 @@ class ILabsApi:
         returned by predict() call in 'task_cancel_url' to cancel
         the running task, instead of using this method.
         '''
+        logging.info('Canceling job %s', task_id)
+
         url = self.URL_CANCEL.format(
             domain=domain,
             task_id=task_id)
@@ -196,6 +205,7 @@ class ILabsApi:
         returned by predict() call in 'document_output_url' to retrieve
         the prediction result, instead of using this method.
         '''
+        logging.info('Downloading output: %s', filename)
         validate_filename(filename)
         return self.get(self.URL_OUTPUT + filename)
 
@@ -209,6 +219,8 @@ class ILabsApi:
         - review predicted file and edit if necessary (to correct prediction mistakes)
         - upload to training folder using this method
         '''
+        logging.info('Uploading feedback: domain=%s, filename=%s', domain, filename)
+
         validate_domain(domain)
         validate_filename(filename)
         url = self.URL_FEEDBACK.format(domain=domain) + filename
