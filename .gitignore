@@ -100,8 +100,10 @@ ENV/
 # mypy
 .mypy_cache/
 .venv2
+.venv3
 .vscode
 inp/
 input/
 out/
 output
+.pytest_cache/

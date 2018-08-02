@@ -7,13 +7,12 @@ except ImportError:
     import ConfigParser as configparser
 
 _SECTIONS = ['ilabs', 'default']
-_KEY     = 'ilabs_user_key'
 
 
-def get_user_key():
+def get_secret():
     '''Implements strategy for obtaining user key from the runtime context:
 
-    1. Environment variable ILABS_USER_KEY
+    1. Environment variables ILABS_USER_KEY, ILABS_DATAVAULT_KEY
     2. User config file in `~/.config/ilabs/ilabs.conf` (in `[ilabs]` section
         or `[default]` section)
     3. System-wide config file `/etc/ilabs.conf` (in `[ilabs]` section
@@ -23,12 +22,20 @@ def get_user_key():
 
         [default]
         ilabs_user_key=1234567890
+        ilabs_datavault_key=asdnasfsdafsdfbsdfbsdb
 
     '''
 
-    user_key = os.environ.get('ILABS_USER_KEY')
-    if user_key is not None:
-        return user_key
+    return dict(
+        ilabs_user_key=_get('ILABS_USER_KEY'),
+        ilabs_datavault_key=_get('ILABS_DATAVAULT_KEY')
+    )
+
+
+def _get(key):
+    value = os.environ.get(key.upper())
+    if value is not None:
+        return value
 
     config = configparser.ConfigParser()
     config.read([
@@ -38,8 +45,7 @@ def get_user_key():
 
     for section in _SECTIONS:
         try:
-            user_key = config.get(section, _KEY)
-            return user_key
+            return config.get(section, key.lower())
         except configparser.NoSectionError:
             pass
         except configparser.NoOptionError:
