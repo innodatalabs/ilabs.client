@@ -132,8 +132,7 @@ class ILabsDatavaultApi:
         return json.loads(out.decode())['count']
 
 
-if __name__ == '__main__':
-
+def main():
     import argparse
 
     parser = argparse.ArgumentParser(description='Innodata Labs Datavault tool')
@@ -268,3 +267,5 @@ if __name__ == '__main__':
     else:
         parser.error('Command is required')
 
+if __name__ == '__main__':
+    main()
