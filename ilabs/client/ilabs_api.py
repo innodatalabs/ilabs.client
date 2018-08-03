@@ -1,39 +1,15 @@
-from __future__ import absolute_import, unicode_literals
+from __future__ import absolute_import, unicode_literals, print_function
 
 import sys
 import socket
 import json
-from ilabs.client.get_user_key import get_user_key
+from ilabs.client.get_secret import get_secret
+from ilabs.client.send_request import send_request, ILABS_USER_AGENT
 from ilabs.client import __version__
 import logging
 
-try:
-    from urllib2 import Request, urlopen
-except ImportError:
-    from urllib.request import Request, urlopen
-
-def send_request(method, url, data=None, headers=None):
-    logging.debug('%s %s', method, url)
-    assert method in ('GET', 'POST')
-    if data is not None:
-        assert method == 'POST'
-    else:
-        assert method == 'GET'
-
-    # ugly!
-    if sys.version_info[0] < 3:
-        url = url.encode()
-        if headers is not None:
-            headers = {
-                key.encode(): val.encode()
-                for key, val in headers.items()
-            }
-
-    return urlopen(Request(url, headers=headers, data=data))
 
 def noop(*av, **kav): pass
-
-_DEFAULT_USER_AGENT = 'ILabs API client ' + __version__
 
 
 class ILabsApi:
@@ -51,10 +27,10 @@ class ILabsApi:
         self.URL_STATUS   = self.URL_API_BASE + '/reference/{domain}/{task_id}/status'
         self.URL_CANCEL   = self.URL_API_BASE + '/reference/{domain}/{task_id}/cancel'
 
-        self._user_key = user_key or get_user_key()
+        self._user_key = user_key or get_secret().get('ilabs_user_key')
         if self._user_key is None:
             raise RuntimeError('Could not find credentials')
-        self._user_agent = user_agent or _DEFAULT_USER_AGENT
+        self._user_agent = user_agent or ILABS_USER_AGENT
         self._timeout = timeout
         if self._timeout is None:
             self._timeout = socket._GLOBAL_DEFAULT_TIMEOUT

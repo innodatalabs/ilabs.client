@@ -1,6 +1,6 @@
 import unittest
 import mock
-from ilabs.client.get_user_key import get_user_key
+from ilabs.client.get_secret import get_secret
 import os
 import contextlib
 
@@ -45,17 +45,18 @@ def mock_fs(files={}):
     return mock_open
 
 
-class TestGetUserKey(unittest.TestCase):
+class TestGetSecret(unittest.TestCase):
 
     def test_smoke(self):
-        user_key = get_user_key()
+        with mock.patch.dict(os.environ, {}):
+            user_key = get_secret().get('ilabs_user_key')
 
         self.assertIsNone(user_key)
 
     def test_env(self):
 
         with mock.patch.dict(os.environ, {'ILABS_USER_KEY': 'blah'}):
-            user_key = get_user_key()
+            user_key = get_secret().get('ilabs_user_key')
 
         self.assertEquals(user_key, 'blah')
 
@@ -66,10 +67,12 @@ class TestGetUserKey(unittest.TestCase):
 ilabs_user_key=foo
 '''
 
-        with mock.patch('ilabs.client.get_user_key.configparser.open', mock_fs({
+        os.environ.pop('ILABS_USER_KEY', None)
+        with mock.patch('ilabs.client.get_secret.configparser.open', mock_fs({
             '/etc/ilabs.conf': config
         })):
-            user_key = get_user_key()
+            with mock.patch.dict(os.environ, {}):
+                user_key = get_secret().get('ilabs_user_key')
 
         self.assertEquals(user_key, 'foo')
 
@@ -82,10 +85,11 @@ ilabs_user_key=foo
 ilabs_user_key=boo
 '''
 
-        with mock.patch('ilabs.client.get_user_key.configparser.open', mock_fs({
+        os.environ.pop('ILABS_USER_KEY', None)
+        with mock.patch('ilabs.client.get_secret.configparser.open', mock_fs({
             '/etc/ilabs.conf': config
         })):
-            user_key = get_user_key()
+            user_key = get_secret().get('ilabs_user_key')
 
         self.assertEquals(user_key, 'boo')
 
@@ -100,14 +104,36 @@ ilabs_user_key=bar
 [default]
 ilabs_user_key=foo
 '''
-
-        with mock.patch('ilabs.client.get_user_key.configparser.open', mock_fs({
+        os.environ.pop('ILABS_USER_KEY', None)
+        with mock.patch('ilabs.client.get_secret.configparser.open', mock_fs({
             '/etc/ilabs.conf': config2,
             os.path.expanduser(r'~/.config/ilabs/ilabs.conf'): config1
         })):
-            user_key = get_user_key()
+            user_key = get_secret().get('ilabs_user_key')
 
         self.assertEquals(user_key, 'bar')
+
+    def test_datavault_env(self):
+
+        with mock.patch.dict(os.environ, {'ILABS_DATAVAULT_KEY': 'blah'}):
+            datavault_key = get_secret().get('ilabs_datavault_key')
+
+        self.assertEquals(datavault_key, 'blah')
+
+    def test_datavault_file(self):
+
+        config = '''
+[default]
+ilabs_datavault_key=foo
+'''
+        os.environ.pop('ILABS_DATAVAULT_KEY', None)
+        with mock.patch('ilabs.client.get_secret.configparser.open', mock_fs({
+            '/etc/ilabs.conf': config
+        })):
+            datavault_key = get_secret().get('ilabs_datavault_key')
+
+        self.assertEquals(datavault_key, 'foo')
+
 
 if __name__ == '__main__':
     unittest.main()
