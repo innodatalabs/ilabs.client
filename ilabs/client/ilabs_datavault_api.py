@@ -115,7 +115,7 @@ class ILabsDatavaultApi:
         return json.loads(out.decode())['count']
 
     def upload(self, binary_data, collection, name, facet='master'):
-        out = self._post('/' + collection + '/' + name + '/' + facet, data=binary_data, content_type='application/octet-stream')
+        self._post('/' + collection + '/' + name + '/' + facet, data=binary_data, content_type='application/octet-stream')
 
     def download(self, collection, name, facet='master'):
         return self._get('/' + collection + '/' + name + '/' + facet)

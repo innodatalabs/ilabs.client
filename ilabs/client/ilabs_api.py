@@ -27,6 +27,8 @@ class ILabsApi:
         self.URL_STATUS   = self.URL_API_BASE + '/reference/{domain}/{task_id}/status'
         self.URL_CANCEL   = self.URL_API_BASE + '/reference/{domain}/{task_id}/cancel'
 
+        self.URL_PREDICT_DV  = self.URL_API_BASE + '/prediction/{domain}/{collection}/{name}'
+
         self._user_key = user_key or get_secret().get('ilabs_user_key')
         if self._user_key is None:
             raise RuntimeError('Could not find credentials')
@@ -35,7 +37,7 @@ class ILabsApi:
         if self._timeout is None:
             self._timeout = socket._GLOBAL_DEFAULT_TIMEOUT
 
-    def _request(self, method, url, data=None, content_type=None):
+    def _request(self, method, url, data=None, content_type=None, query=None):
         headers = {
             'User-Key'     : self._user_key,
             'User-Agent'   : self._user_agent,
@@ -45,7 +47,8 @@ class ILabsApi:
             headers['Content-Type'] = content_type
         res = send_request(method, url,
             data=data,
-            headers= headers
+            headers= headers,
+            query=query
         )
 
         if res.getcode() not in (200, 202):
@@ -53,16 +56,16 @@ class ILabsApi:
 
         return res.read()
 
-    def _post(self, url, data, content_type=None):
-        return self._request('POST', url, data, content_type=content_type)
+    def _post(self, url, data, content_type=None, query=None):
+        return self._request('POST', url, data, content_type=content_type, query=query)
 
-    def get(self, url):
+    def get(self, url, query=None):
         '''
         Issues GET request with credentials.
         Useful for status/ and cancel/ REST operations using
         urls returned from predict() call.
         '''
-        return self._request('GET', url)
+        return self._request('GET', url, query=query)
 
     def ping(self):
         '''
@@ -130,6 +133,35 @@ class ILabsApi:
             domain=domain,
             name=filename)
         out = self.get(url)
+        return json.loads(out.decode())
+
+    def predict_dv(self, domain, collection, filename, input_facet='input', output_facet='output'):
+        '''
+        Schedules a task to run prediction on file "filename" using
+        domain "domain".
+
+        Returns dictionary with the following keys:
+
+        - task_id   - task id
+        - task_cancel_url  - use this url to cancel the task
+        - document_output_url - use this url to download prediction result
+        - tast_status_url - query status
+        - output_filename - name of the output file (created only after task
+            successfully completes)
+        - version - ???
+        '''
+        logging.info('Trigger prediction job from Datavault: domain=%s, name=%s/%s, input_facet=%s, output_facet=%s',
+            domain, collection, filename, input_facet, output_facet)
+
+        validate_filename(filename)
+        url = self.URL_PREDICT_DV.format(
+            domain=domain,
+            collection=collection,
+            name=filename)
+        out = self._post(url, b'', query={
+            'input_facet': input_facet,
+            'output_facet': output_facet
+        })
         return json.loads(out.decode())
 
     def status(self, domain, task_id):
