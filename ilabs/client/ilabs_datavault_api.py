@@ -86,8 +86,17 @@ class ILabsDatavaultApi:
         return json.loads(out.decode())
 
     def list_collections(self):
-        out = self._get('')
-        return json.loads(out.decode())['collections']
+        collections = []
+        query = {}
+        while True:
+            out = self._get('', query=query)
+            data = json.loads(out.decode())
+            collections.extend(data['collections'])
+            if 'next_cursor' not in data:
+                break
+
+            query =  {'cursor': data['next_cursor']}
+        return collections
 
     def count_collections(self):
         out = self._get('', query={'resource': 'count'})
