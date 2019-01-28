@@ -1,10 +1,11 @@
 from __future__ import print_function, absolute_import, unicode_literals
-import glob
 import os
-from ilabs.client.ilabs_bulk_predict import missing_files
-from ilabs.client import ilabs_api, ilabs_datavault_api
-from ilabs.client.ilabs_datavault_predictor import IlabsDatavaultPredictor
+import glob
+import logging
 
+from ilabs.client import ilabs_api, ilabs_datavault_api
+from ilabs.client.ilabs_datavault_predictor import ILabsDatavaultPredictor
+from ilabs.client.ilabs_bulk_predict import missing_files
 
 def predict(input_filename, output_filename, collection, predictor):
     try:
@@ -47,7 +48,7 @@ def bulk_predict(
     _create_collection_if_needed(collection, datavault_api)
 
     api = ilabs_api.ILabsApi(user_key)
-    predictor = IlabsDatavaultPredictor(domain, api, datavault_api)
+    predictor = ILabsDatavaultPredictor(api, datavault_api, domain)
 
     if os.path.isfile(input):
         if os.path.isdir(output):

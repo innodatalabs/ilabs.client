@@ -1,16 +1,14 @@
-from ilabs.client import ilabs_datavault_api
-from ilabs.client import ilabs_api
-from ilabs.client import ilabs_predictor
-import logging
-import json
+import os
 import time
+import json
+import logging
 
 
 def noop(*av, **kav): pass
 
-class IlabsDatavaultPredictor:
+class ILabsDatavaultPredictor:
 
-    def __init__(self, domain, api, datavault_api):
+    def __init__(self, api, datavault_api, domain):
         self.api = api
         self.datavault_api = datavault_api
         self._domain = domain
@@ -31,7 +29,7 @@ class IlabsDatavaultPredictor:
         document_output_url = response['document_output_url']
         task_status_url = response['task_status_url']
         output_filename = response['output_filename']
-        progress('Job submitted, taks id: %s' % task_id)
+        progress('Job submitted, task id: %s' % task_id)
 
         try:
             count = 1
@@ -62,8 +60,11 @@ class IlabsDatavaultPredictor:
             raise RuntimeError('Prediction server returned error: ' + err)
 
         progress('Fetching result')
-        progress('Downloading document %s from %s/%s' % (filename, collection, input_facet))
+        progress('Downloading document %s from %s/%s' % (filename, collection, output_facet))
         prediction = self.datavault_api.download(collection, filename, facet=output_facet)
         progress('Downloaded %s bytes' % len(prediction))
 
         return prediction
+
+    def upload_feedback(self, binary_data, collection, filename, facet='feedback'):
+        out = self.datavault_api.upload(binary_data, collection, filename, facet=facet)
