@@ -18,7 +18,7 @@ class TestIlabsApi(unittest.TestCase):
         with mock.patch('ilabs.client.ilabs_api.send_request', mock_request) as request:
 
             api._request('OPTIONS', 'http://www.gogole.com', b'some content',
-                content_type='test/test', query=None)
+                content_type='test/test')
 
             self.assertEqual(request.call_count, 1)
             request.assert_called_with(

@@ -24,7 +24,7 @@ class ILabsApi:
         self.URL_FEEDBACK = self.URL_API_BASE + '/documents/training/{domain}/'
 
         self.URL_PREDICT  = self.URL_API_BASE + '/reference/{domain}/{name}'
-        self.URL_PREDICT_ = self.URL_API_BASE + '/prediction/{domain}/{collection}/{name}'
+        self.URL_PREDICT_DATAVAULT = self.URL_API_BASE + '/prediction/{domain}/{collection}/{name}'
         self.URL_STATUS   = self.URL_API_BASE + '/reference/{domain}/{task_id}/status'
         self.URL_CANCEL   = self.URL_API_BASE + '/reference/{domain}/{task_id}/cancel'
 
@@ -149,11 +149,11 @@ class ILabsApi:
         - output_filename - name of the output file (created only after task
             successfully completes)
         '''
-        
+
         logging.info('Trigger prediction job: domain=%s, collection=%s, filename=%s',
             domain, collection, filename)
         validate_filename(filename)
-        url = self.URL_PREDICT_.format(
+        url = self.URL_PREDICT_DATAVAULT.format(
             domain=domain,
             collection=collection,
             name=filename)
