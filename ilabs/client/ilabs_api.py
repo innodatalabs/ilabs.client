@@ -24,6 +24,7 @@ class ILabsApi:
         self.URL_FEEDBACK = self.URL_API_BASE + '/documents/training/{domain}/'
 
         self.URL_PREDICT  = self.URL_API_BASE + '/reference/{domain}/{name}'
+        self.URL_PREDICT_DATAVAULT = self.URL_API_BASE + '/prediction/{domain}/{collection}/{name}'
         self.URL_STATUS   = self.URL_API_BASE + '/reference/{domain}/{task_id}/status'
         self.URL_CANCEL   = self.URL_API_BASE + '/reference/{domain}/{task_id}/cancel'
 
@@ -35,7 +36,7 @@ class ILabsApi:
         if self._timeout is None:
             self._timeout = socket._GLOBAL_DEFAULT_TIMEOUT
 
-    def _request(self, method, url, data=None, content_type=None):
+    def _request(self, method, url, data=None, content_type=None, query=None):
         headers = {
             'User-Key'     : self._user_key,
             'User-Agent'   : self._user_agent,
@@ -45,7 +46,8 @@ class ILabsApi:
             headers['Content-Type'] = content_type
         res = send_request(method, url,
             data=data,
-            headers= headers
+            headers= headers,
+            query=query
         )
 
         if res.getcode() not in (200, 202):
@@ -53,8 +55,8 @@ class ILabsApi:
 
         return res.read()
 
-    def _post(self, url, data, content_type=None):
-        return self._request('POST', url, data, content_type=content_type)
+    def _post(self, url, data, content_type=None, query=None):
+        return self._request('POST', url, data, content_type=content_type, query=query)
 
     def get(self, url):
         '''
@@ -130,6 +132,38 @@ class ILabsApi:
             domain=domain,
             name=filename)
         out = self.get(url)
+        return json.loads(out.decode())
+
+    def predict_from_datavault(self, domain, collection, filename,
+        input_facet='master', output_facet='prediction'):
+        '''
+        Schedules a task to run prediction on file "filename" inside
+        facet "input_facet" in collection "collection" using domain "domain".
+
+        Returns dictionary with the following keys:
+
+        - task_id   - task id
+        - task_cancel_url  - use this url to cancel the task
+        - document_output_url - use this url to download prediction result
+        - tast_status_url - query status
+        - output_filename - name of the output file (created only after task
+            successfully completes)
+        '''
+
+        logging.info('Trigger prediction job: domain=%s, collection=%s, filename=%s',
+            domain, collection, filename)
+        validate_filename(filename)
+        url = self.URL_PREDICT_DATAVAULT.format(
+            domain=domain,
+            collection=collection,
+            name=filename)
+
+        query = {
+            'input_facet': input_facet,
+            'output_facet': output_facet
+        }
+
+        out = self._post(url, data=b'', query=query)
         return json.loads(out.decode())
 
     def status(self, domain, task_id):

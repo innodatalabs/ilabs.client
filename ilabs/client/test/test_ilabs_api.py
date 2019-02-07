@@ -25,6 +25,7 @@ class TestIlabsApi(unittest.TestCase):
                 'OPTIONS',
                 'http://www.gogole.com',
                 data=b'some content',
+                query=None,
                 headers={
                     'User-Agent': 'ILabs API client ' + __version__,
                     'Content-Type': 'test/test',
@@ -52,7 +53,7 @@ class TestIlabsApi(unittest.TestCase):
             'POST',
             'https://api.innodatalabs.com/v1/documents/input/',
             b'hello',
-            content_type='application/octet-stream')
+            content_type='application/octet-stream', query=None)
 
         self.assertEqual(rc, {'bytes_accepted': 5, 'input_filename': '123456.bin'})
 
@@ -61,7 +62,7 @@ class TestIlabsApi(unittest.TestCase):
             'POST',
             'https://api.innodatalabs.com/v1/documents/input/XXX',
             b'hello',
-            content_type='application/octet-stream')
+            content_type='application/octet-stream', query=None)
 
         self.assertEqual(rc, {'bytes_accepted': 5, 'input_filename': '123456.bin'})
 
@@ -102,6 +103,28 @@ class TestIlabsApi(unittest.TestCase):
     "output_filename"    : "https://api.innodatalabs.com/v1/output/yyyy"
 })
 
+    def test_predict_from_datavault(self):
+        api = ilabs_api.ILabsApi(user_key=_DUMMY_USER_KEY)
+        api._request = mock.Mock(return_value=b'''\
+{
+    "task_id"            : "test-task-id",
+    "task_cancel_url"    : "https://api.innodatalabs.com/v1/cancel/xxx",
+    "task_status_url"    : "https://api.innodatalabs.com/v1/status/xxx",
+    "document_output_url": "https://api.innodatalabs.com/datavault/test-collection/123456.bin/prediction",
+    "output_filename"    : "123456.bin"
+}
+''')
+        rc = api.predict_from_datavault(domain='test-domain',
+            collection='test-collection', filename='123456.bin')
+
+        api._request.assert_called_once_with(
+            'POST',
+            'https://api.innodatalabs.com/v1/prediction/test-domain/test-collection/123456.bin',
+            b'',
+            query={'input_facet': 'master', 'output_facet': 'prediction'},
+            content_type=None
+        )
+
     def test_status(self):
         api = ilabs_api.ILabsApi(user_key=_DUMMY_USER_KEY)
         api._request = mock.Mock(return_value=b'{ "completed": false }')
@@ -133,7 +156,7 @@ class TestIlabsApi(unittest.TestCase):
             'POST',
             'https://api.innodatalabs.com/v1/documents/training/test-domain/000-123.xml',
             b'contents',
-            content_type='application/octet-stream')
+            content_type='application/octet-stream', query=None)
 
         self.assertEqual(rc, {"bytes_accepted": 8})
 
