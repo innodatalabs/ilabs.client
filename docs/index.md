@@ -109,3 +109,32 @@ assert predicted_tagging[0] == [
   ('', None)
 ]
 ```
+
+## ILabsDatavaultPredictor
+Implements file-in to file-out process. Takes care of polling for the
+asynchronous job status.
+
+Example:
+```
+api = ILabsApi()
+datavault_api = ILabsDatavaultApi()
+predict = ILabsDatavaultPredictor(api, datavault_api, domain='embase-indexing')
+
+document = b'''{"title":"Unlock the power of your digital data", "abstract": "Innodata is a global
+services and technology solutions company. We combine data extraction, machine learning, and data
+enrichment with domain expertise to help you transform your business, drive new revenue, and get
+to market faster with your products and services."}'''
+
+prediction = predict(document
+                     collection='my-collection',
+                     filename='my-document.json',
+                     input_facet='master',
+                     output_facet='prediction',
+                     progress=print)
+
+# Uploading feedback data
+predict.upload_feedback(prediction,
+                        collection='my-collection'
+                        facet='feedback')
+
+```
