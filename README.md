@@ -48,3 +48,36 @@ optional arguments:
   --num_workers NUM_WORKERS, -n NUM_WORKERS
                         Number of concurrent workers
 ```
+
+## Command-Line Bulk Prediction Tool for Datavault
+
+```
+ilabs_datavault_bulk_predict -h
+
+usage: ilabs_datavault_bulk_predict [-h] --domain DOMAIN
+                                    --collection COLLECTION
+                                    [--user_key USER_KEY]
+                                    [--datavault_token DATAVAULT_TOKEN]
+                                    [--verbose]
+                                    input output
+
+Sends all files from the input directory to prediction service and places
+result in the output directory
+
+positional arguments:
+  input                 Input file or directory
+  output                Output file or directory
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --domain DOMAIN, -d DOMAIN
+                        Prediction domain
+  --collection COLLECTION, -c COLLECTION
+                        Datavault collection name
+  --user_key USER_KEY, -u USER_KEY
+                        Secret user key
+  --datavault_token DATAVAULT_TOKEN, -t DATAVAULT_TOKEN
+                        Secret datavault token
+  --verbose, -v         Increases verbosity. Use multiple times to get even
+                        more verbose
+```
