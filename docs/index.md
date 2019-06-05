@@ -116,16 +116,16 @@ asynchronous job status.
 
 Example:
 ```
-predict = ILabsDatavaultPredictor.init(domain='embase-indexing', collection='my-collection')
+predictor = ILabsDatavaultPredictor.init(domain='embase-indexing', collection='my-collection')
 
 document = b'''{"title":"Unlock the power of your digital data", "abstract": "Innodata is a global
 services and technology solutions company. We combine data extraction, machine learning, and data
 enrichment with domain expertise to help you transform your business, drive new revenue, and get
 to market faster with your products and services."}'''
 
-prediction = predict(document, progress=print)
+prediction = predictor(document, progress=print)
 
 # Uploading feedback data
-predict.upload(prediction, name='feedback.txt', facet='feedback')
+predictor.upload(prediction, name='feedback.txt', facet='feedback')
 
 ```
