@@ -1,35 +1,53 @@
-import os
+from ilabs.client import ilabs_api, ilabs_datavault_api
 import time
 import json
 import logging
-
+import uuid
 
 def noop(*av, **kav): pass
 
-class ILabsDatavaultPredictor:
 
-    def __init__(self, api, datavault_api, domain):
+class ILabsDatavaultPredictor(ilabs_api.ILabsApi):
+
+    @classmethod
+    def init(cls, domain, collection, input_facet='input', output_facet='output', user_key=None, datavault_key=None, timeout=None, user_agent=None):
+        return cls(
+            ilabs_api.ILabsApi(user_key=user_key, timeout=timeout, user_agent=user_agent),
+            ilabs_datavault_api.ILabsDatavaultApi(user_key=user_key, datavault_key=datavault_key, timeout=timeout, user_agent=user_agent),
+            domain=domain,
+            collection=collection,
+            input_facet=input_facet,
+            output_facet=output_facet
+        )
+
+    def __init__(self, api, datavault, domain, collection, input_facet='input', output_facet='output'):
         self.api = api
-        self.datavault_api = datavault_api
+        self._datavault = datavault
         self._domain = domain
+        self._collection = collection
+        self._input_facet=input_facet
+        self._output_facet=output_facet
 
-    def __call__(self, binary_data, collection, filename, input_facet='master',
-                    output_facet='prediction', progress=None):
-
+    def __call__(self, binary_data, name=None, progress=None):
         if progress is None:
             progress = noop
 
-        progress('Uploading document %s in %s/%s' % (filename, collection, input_facet))
-        out = self.datavault_api.upload(binary_data, collection, filename, facet=input_facet)
-        response = self.api.predict_from_datavault(self._domain, collection, filename,
-            input_facet=input_facet, output_facet=output_facet)
+        if name is None:
+            name = str(uuid.uuid4())
 
+        progress('uploading %s bytes' % len(binary_data))
+
+        self.upload(binary_data, name, facet=self._input_facet)
+
+        progress('uploaded')
+
+        response = self.api.predict_from_datavault(self._domain, self._collection, name, input_facet=self._input_facet, output_facet=self._output_facet)
         task_id = response['task_id']
         task_cancel_url = response['task_cancel_url']
         document_output_url = response['document_output_url']
         task_status_url = response['task_status_url']
         output_filename = response['output_filename']
-        progress('Job submitted, task id: %s' % task_id)
+        progress('job submitted, taks id: %s' % task_id)
 
         try:
             count = 1
@@ -59,12 +77,20 @@ class ILabsDatavaultPredictor:
         if err is not None:
             raise RuntimeError('Prediction server returned error: ' + err)
 
-        progress('Fetching result')
-        progress('Downloading document %s from %s/%s' % (filename, collection, output_facet))
-        prediction = self.datavault_api.download(collection, filename, facet=output_facet)
-        progress('Downloaded %s bytes' % len(prediction))
+        progress('fetching result')
+        logging.info('Downloading from: %s', document_output_url)
+        prediction = self.download(name, facet=self._output_facet)
+        progress('downloaded %s bytes' % len(prediction))
 
         return prediction
 
-    def upload_feedback(self, binary_data, collection, filename, facet='feedback'):
-        out = self.datavault_api.upload(binary_data, collection, filename, facet=facet)
+    def upload(self, binary_data, name, facet='master'):
+        self._datavault.upload(binary_data, self._collection, name, facet=facet)
+
+    def download(self, name, facet='master'):
+        return self._datavault.download(self._collection, name, facet=facet)
+
+    @property
+    def datavault_api(self):
+        return self._datavault
+

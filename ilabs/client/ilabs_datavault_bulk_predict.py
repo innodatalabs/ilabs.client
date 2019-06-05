@@ -1,4 +1,3 @@
-from __future__ import print_function, absolute_import, unicode_literals
 import os
 import glob
 import logging
@@ -7,28 +6,19 @@ from ilabs.client import ilabs_api, ilabs_datavault_api
 from ilabs.client.ilabs_datavault_predictor import ILabsDatavaultPredictor
 from ilabs.client.ilabs_bulk_predict import missing_files
 
-def predict(input_filename, output_filename, collection, predictor):
+
+def predict(input_filename, output_filename, predictor):
     try:
         with open(input_filename, 'rb') as f:
             input_bytes = f.read()
 
-        filename = os.path.basename(input_filename)
-
-        output_bytes = predictor(input_bytes, collection, filename)
+        output_bytes = predictor(input_bytes)
         with open(output_filename, 'wb') as f:
             f.write(output_bytes)
 
     except RuntimeError as e:
         return e
 
-def _create_collection_if_needed(collection, api):
-    present_collections = api.list_collections()
-    if collection not in present_collections:
-        api.create_collection(collection)
-        policy = api.get_collection_policy(collection)
-        policy['grants'] = {'api.innodatalabs.com': ['write']}
-        api.set_collection_policy(collection, policy)
-        print('Created an empty collection %s' % collection)
 
 def bulk_predict(
     domain,
@@ -44,11 +34,23 @@ def bulk_predict(
     elif verbose > 1:
         logging.basicConfig(level=logging.DEBUG)
 
-    datavault_api = ilabs_datavault_api.ILabsDatavaultApi(user_key, datavault_token)
-    _create_collection_if_needed(collection, datavault_api)
+    predictor = ILabsDatavaultPredictor.init(
+        domain=domain,
+        collection=collection,
+        user_key=user_key,
+        datavault_key=datavault_token)
 
-    api = ilabs_api.ILabsApi(user_key)
-    predictor = ILabsDatavaultPredictor(api, datavault_api, domain)
+    # create collection if needed, and add required grant
+    datavault_api = predictor.datavault_api
+    present_collections = datavault_api.list_collections()
+    if collection not in present_collections:
+        datavault_api.create_collection(collection)
+        logging.info('Created new collection %s', collection)
+    policy = datavault_api.get_collection_policy(collection)
+    if not 'write' in policy.get('grants', {}).get('api.innodatalabs.com', []):
+        policy.setdefault('grants', {}).setdefault('api.innodatalabs.com', []).append('write')
+        datavault_api.set_collection_policy(collection, policy)
+        logging.info('Updated collection policy to allow writing by "api.innodatalabs.com"')
 
     if os.path.isfile(input):
         if os.path.isdir(output):
@@ -57,7 +59,7 @@ def bulk_predict(
             print('Output file exists, nothing to do: ' + output)
             return
 
-        error = predict(input, output, collection, predictor)
+        error = predict(input, output, predictor)
         print(os.path.basename(output), error or 'OK')
 
         return
@@ -80,11 +82,11 @@ def bulk_predict(
         error = predict(
             os.path.join(input, fname),
             os.path.join(output, fname),
-            collection,
             predictor
         )
 
         print(fname, error or 'OK')
+
 
 def main():
     import argparse

@@ -40,7 +40,7 @@ class TestIlabsApi(unittest.TestCase):
         api._request = mock.Mock(return_value=b'{ "ping": "pong" }')
 
         rc = api.ping()
-        api._request.assert_called_once_with('GET', 'https://api.innodatalabs.com/v1/ping')
+        api._request.assert_called_once_with('GET', 'https://api.innodatalabs.com/v1/ping', query=None)
 
         self.assertEqual(rc, {'ping': 'pong'})
 
@@ -73,7 +73,8 @@ class TestIlabsApi(unittest.TestCase):
         rc = api.download_input('XXX')
         api._request.assert_called_once_with(
             'GET',
-            'https://api.innodatalabs.com/v1/documents/input/XXX')
+            'https://api.innodatalabs.com/v1/documents/input/XXX',
+            query=None)
 
         self.assertEqual(rc, b'contents')
 
@@ -92,7 +93,8 @@ class TestIlabsApi(unittest.TestCase):
         rc = api.predict(domain='test-domain', filename='123456.bin')
         api._request.assert_called_once_with(
             'GET',
-            'https://api.innodatalabs.com/v1/reference/test-domain/123456.bin'
+            'https://api.innodatalabs.com/v1/reference/test-domain/123456.bin',
+            query=None
         )
 
         self.assertEqual(rc, {
@@ -132,7 +134,8 @@ class TestIlabsApi(unittest.TestCase):
         rc = api.status('test-domain', 'test-job-id')
         api._request.assert_called_once_with(
             'GET',
-            'https://api.innodatalabs.com/v1/reference/test-domain/test-job-id/status')
+            'https://api.innodatalabs.com/v1/reference/test-domain/test-job-id/status',
+            query=None)
 
         self.assertEqual(rc, {'completed': False})
 
@@ -143,7 +146,8 @@ class TestIlabsApi(unittest.TestCase):
         rc = api.cancel('test-domain', 'test-job-id')
         api._request.assert_called_once_with(
             'GET',
-            'https://api.innodatalabs.com/v1/reference/test-domain/test-job-id/cancel')
+            'https://api.innodatalabs.com/v1/reference/test-domain/test-job-id/cancel',
+            query=None)
 
         self.assertEqual(rc, [])
 

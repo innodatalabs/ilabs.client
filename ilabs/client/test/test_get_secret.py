@@ -49,7 +49,13 @@ class TestGetSecret(unittest.TestCase):
 
     def test_smoke(self):
         with mock.patch.dict(os.environ, {}):
-            user_key = get_secret().get('ilabs_user_key')
+            with mock.patch(
+                'ilabs.client.get_secret.configparser',
+                mock.Mock(ConfigParser=mock.Mock(return_value=mock.Mock(
+                    get=mock.Mock(return_value=None)
+                )))
+            ):
+                user_key = get_secret().get('ilabs_user_key')
 
         self.assertIsNone(user_key)
 
@@ -58,7 +64,7 @@ class TestGetSecret(unittest.TestCase):
         with mock.patch.dict(os.environ, {'ILABS_USER_KEY': 'blah'}):
             user_key = get_secret().get('ilabs_user_key')
 
-        self.assertEquals(user_key, 'blah')
+        self.assertEqual(user_key, 'blah')
 
     def test_file(self):
 
@@ -74,7 +80,7 @@ ilabs_user_key=foo
             with mock.patch.dict(os.environ, {}):
                 user_key = get_secret().get('ilabs_user_key')
 
-        self.assertEquals(user_key, 'foo')
+        self.assertEqual(user_key, 'foo')
 
     def test_section(self):
 
@@ -91,7 +97,7 @@ ilabs_user_key=boo
         })):
             user_key = get_secret().get('ilabs_user_key')
 
-        self.assertEquals(user_key, 'boo')
+        self.assertEqual(user_key, 'boo')
 
     def test_file_precedence(self):
 
@@ -111,14 +117,14 @@ ilabs_user_key=foo
         })):
             user_key = get_secret().get('ilabs_user_key')
 
-        self.assertEquals(user_key, 'bar')
+        self.assertEqual(user_key, 'bar')
 
     def test_datavault_env(self):
 
         with mock.patch.dict(os.environ, {'ILABS_DATAVAULT_KEY': 'blah'}):
             datavault_key = get_secret().get('ilabs_datavault_key')
 
-        self.assertEquals(datavault_key, 'blah')
+        self.assertEqual(datavault_key, 'blah')
 
     def test_datavault_file(self):
 
@@ -132,7 +138,7 @@ ilabs_datavault_key=foo
         })):
             datavault_key = get_secret().get('ilabs_datavault_key')
 
-        self.assertEquals(datavault_key, 'foo')
+        self.assertEqual(datavault_key, 'foo')
 
 
 if __name__ == '__main__':

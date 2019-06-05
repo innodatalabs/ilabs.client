@@ -24,9 +24,10 @@ class ILabsApi:
         self.URL_FEEDBACK = self.URL_API_BASE + '/documents/training/{domain}/'
 
         self.URL_PREDICT  = self.URL_API_BASE + '/reference/{domain}/{name}'
-        self.URL_PREDICT_DATAVAULT = self.URL_API_BASE + '/prediction/{domain}/{collection}/{name}'
         self.URL_STATUS   = self.URL_API_BASE + '/reference/{domain}/{task_id}/status'
         self.URL_CANCEL   = self.URL_API_BASE + '/reference/{domain}/{task_id}/cancel'
+
+        self.URL_PREDICT_DV  = self.URL_API_BASE + '/prediction/{domain}/{collection}/{name}'
 
         self._user_key = user_key or get_secret().get('ilabs_user_key')
         if self._user_key is None:
@@ -58,13 +59,13 @@ class ILabsApi:
     def _post(self, url, data, content_type=None, query=None):
         return self._request('POST', url, data, content_type=content_type, query=query)
 
-    def get(self, url):
+    def get(self, url, query=None):
         '''
         Issues GET request with credentials.
         Useful for status/ and cancel/ REST operations using
         urls returned from predict() call.
         '''
-        return self._request('GET', url)
+        return self._request('GET', url, query=query)
 
     def ping(self):
         '''
@@ -134,11 +135,10 @@ class ILabsApi:
         out = self.get(url)
         return json.loads(out.decode())
 
-    def predict_from_datavault(self, domain, collection, filename,
-        input_facet='master', output_facet='prediction'):
+    def predict_from_datavault(self, domain, collection, filename, input_facet='master', output_facet='prediction'):
         '''
-        Schedules a task to run prediction on file "filename" inside
-        facet "input_facet" in collection "collection" using domain "domain".
+        Schedules a task to run prediction on file "filename" using
+        domain "domain".
 
         Returns dictionary with the following keys:
 
@@ -149,21 +149,18 @@ class ILabsApi:
         - output_filename - name of the output file (created only after task
             successfully completes)
         '''
+        logging.info('Trigger prediction job from Datavault: domain=%s, name=%s/%s, input_facet=%s, output_facet=%s',
+            domain, collection, filename, input_facet, output_facet)
 
-        logging.info('Trigger prediction job: domain=%s, collection=%s, filename=%s',
-            domain, collection, filename)
         validate_filename(filename)
-        url = self.URL_PREDICT_DATAVAULT.format(
+        url = self.URL_PREDICT_DV.format(
             domain=domain,
             collection=collection,
             name=filename)
-
-        query = {
+        out = self._post(url, b'', query={
             'input_facet': input_facet,
             'output_facet': output_facet
-        }
-
-        out = self._post(url, data=b'', query=query)
+        })
         return json.loads(out.decode())
 
     def status(self, domain, task_id):
