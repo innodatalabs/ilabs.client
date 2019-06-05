@@ -135,7 +135,7 @@ class ILabsApi:
         out = self.get(url)
         return json.loads(out.decode())
 
-    def predict_dv(self, domain, collection, filename, input_facet='input', output_facet='output'):
+    def predict_from_datavault(self, domain, collection, filename, input_facet='master', output_facet='prediction'):
         '''
         Schedules a task to run prediction on file "filename" using
         domain "domain".

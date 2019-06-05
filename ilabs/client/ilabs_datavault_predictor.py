@@ -41,7 +41,7 @@ class ILabsDatavaultPredictor(ilabs_api.ILabsApi):
 
         progress('uploaded')
 
-        response = self.api.predict_dv(self._domain, self._collection, name, input_facet=self._input_facet, output_facet=self._output_facet)
+        response = self.api.predict_from_datavault(self._domain, self._collection, name, input_facet=self._input_facet, output_facet=self._output_facet)
         task_id = response['task_id']
         task_cancel_url = response['task_cancel_url']
         document_output_url = response['document_output_url']
