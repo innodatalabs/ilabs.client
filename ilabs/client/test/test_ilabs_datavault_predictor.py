@@ -10,8 +10,6 @@ _DUMMY_DATAVAULT_TOKEN = 'JWT0123456789'
 class TestIlabsDatavaultPredictor(unittest.TestCase):
 
     def test_prediction(self):
-        ilabs_datavault_predictor.ILabsDatavaultPredictor._create_collection_if_needed = mock.Mock()
-
         predictor = ilabs_datavault_predictor.ILabsDatavaultPredictor.init(
             domain='foo-domain',
             collection='test-collection',
@@ -48,8 +46,6 @@ class TestIlabsDatavaultPredictor(unittest.TestCase):
         ])
 
     def test_feedback(self):
-        ilabs_datavault_predictor.ILabsDatavaultPredictor._create_collection_if_needed = mock.Mock()
-
         predictor = ilabs_datavault_predictor.ILabsDatavaultPredictor.init(
             domain='foo-domain',
             collection='test-collection',

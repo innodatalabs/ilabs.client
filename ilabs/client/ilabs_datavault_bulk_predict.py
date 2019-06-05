@@ -40,6 +40,18 @@ def bulk_predict(
         user_key=user_key,
         datavault_key=datavault_token)
 
+    # create collection if needed, and add required grant
+    datavault_api = predictor.datavault_api
+    present_collections = datavault_api.list_collections()
+    if collection not in present_collections:
+        datavault_api.create_collection(collection)
+        logging.info('Created new collection %s', collection)
+    policy = datavault_api.get_collection_policy(collection)
+    if not 'write' in policy.get('grants', {}).get('api.innodatalabs.com', []):
+        policy.setdefault('grants', {}).setdefault('api.innodatalabs.com', []).append('write')
+        datavault_api.set_collection_policy(collection, policy)
+        logging.info('Updated collection policy to allow writing by "api.innodatalabs.com"')
+
     if os.path.isfile(input):
         if os.path.isdir(output):
             raise RuntimeError('When input is a single file, output is expected to be a file too. But its a directory: ' + output)
