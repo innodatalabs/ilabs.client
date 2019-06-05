@@ -98,4 +98,3 @@ class ILabsDatavaultPredictor(ilabs_api.ILabsApi):
             policy = self._datavault.get_collection_policy(self._collection)
             policy['grants'] = {'api.innodatalabs.com': ['write']}
             self._datavault.set_collection_policy(self._collection, policy)
-            progress('Created an empty collection %s' % self._collection)
