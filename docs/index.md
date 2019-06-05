@@ -126,8 +126,6 @@ to market faster with your products and services."}'''
 prediction = predict(document, progress=print)
 
 # Uploading feedback data
-predict.upload_feedback(prediction,
-                        name='feedback.txt'
-                        facet='feedback')
+predict.upload(prediction, name='feedback.txt', facet='feedback')
 
 ```
