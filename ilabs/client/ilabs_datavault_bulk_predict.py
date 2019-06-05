@@ -20,16 +20,6 @@ def predict(input_filename, output_filename, predictor):
         return e
 
 
-def _create_collection_if_needed(collection, api):
-    present_collections = api.list_collections()
-    if collection not in present_collections:
-        api.create_collection(collection)
-        policy = api.get_collection_policy(collection)
-        policy['grants'] = {'api.innodatalabs.com': ['write']}
-        api.set_collection_policy(collection, policy)
-        print('Created an empty collection %s' % collection)
-
-
 def bulk_predict(
     domain,
     input,
@@ -80,7 +70,6 @@ def bulk_predict(
         error = predict(
             os.path.join(input, fname),
             os.path.join(output, fname),
-            collection,
             predictor
         )
 

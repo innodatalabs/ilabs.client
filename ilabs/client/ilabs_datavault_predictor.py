@@ -27,6 +27,7 @@ class ILabsDatavaultPredictor(ilabs_api.ILabsApi):
         self._collection = collection
         self._input_facet=input_facet
         self._output_facet=output_facet
+        self._create_collection_if_needed()
 
     def __call__(self, binary_data, name=None, progress=None):
         if progress is None:
@@ -89,3 +90,12 @@ class ILabsDatavaultPredictor(ilabs_api.ILabsApi):
 
     def download(self, name, facet='master'):
         return self._datavault.download(self._collection, name, facet=facet)
+
+    def _create_collection_if_needed(self):
+        present_collections = self._datavault.list_collections()
+        if self._collection not in present_collections:
+            self._datavault.create_collection(self._collection)
+            policy = self._datavault.get_collection_policy(self._collection)
+            policy['grants'] = {'api.innodatalabs.com': ['write']}
+            self._datavault.set_collection_policy(self._collection, policy)
+            progress('Created an empty collection %s' % self._collection)
