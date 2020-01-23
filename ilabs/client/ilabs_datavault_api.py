@@ -45,7 +45,6 @@ class ILabsDatavaultApi:
         }
         if content_type is not None:
             headers['Content-Type'] = content_type
-        logging.debug('%s: %s, query=%s', method, url, query)
         res = send_request(method, url,
             data=data,
             headers=headers,

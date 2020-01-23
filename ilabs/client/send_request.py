@@ -1,5 +1,5 @@
 import logging
-import sys
+import time
 from ilabs.client import __version__
 
 
@@ -30,6 +30,7 @@ def send_request(method, url, data=None, headers=None, query=None):
         except HTTPError as err:
             if 500 <= err.code <= 599:
                 logging.error('HTTP 500: will retry')
+                time.sleep(0.5)
                 continue
             raise err
 
