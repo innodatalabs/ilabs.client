@@ -21,7 +21,7 @@ def noop(*av, **kav): pass
 
 class ILabsDatavaultApi:
 
-    URL_API_BASE = 'https://ilabs-api.innodata.com/datavault'
+    URL_API_BASE = 'https://ilabs-api.innodata.com'
 
     def __init__(self, user_key=None, datavault_key=None, timeout=None, user_agent=None, api_base=None):
         self._user_key = user_key or get_secret().get('ilabs_user_key')
@@ -32,7 +32,9 @@ class ILabsDatavaultApi:
         self._timeout = timeout
         if self._timeout is None:
             self._timeout = socket._GLOBAL_DEFAULT_TIMEOUT
-        self._api_base = api_base if api_base is not None else self.URL_API_BASE
+        if api_base is None:
+            api_base = self.URL_API_BASE
+        self._api_base = api_base + '/datavault'
 
     def _request(self, method, url, data=None, content_type=None, query=None):
         headers = {

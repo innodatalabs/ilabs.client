@@ -14,20 +14,23 @@ def noop(*av, **kav): pass
 
 class ILabsApi:
 
-    URL_API_BASE = 'https://ilabs-api.innodata.com/v1'
+    URL_API_BASE = 'https://ilabs-api.innodata.com'
 
-    def __init__(self, user_key=None, timeout=None, user_agent=None):
-        self.URL_PING     = self.URL_API_BASE + '/ping'
+    def __init__(self, user_key=None, timeout=None, user_agent=None, api_base=None):
+        if api_base is None:
+            api_base = self.URL_API_BASE
 
-        self.URL_INPUT    = self.URL_API_BASE + '/documents/input/'
-        self.URL_OUTPUT   = self.URL_API_BASE + '/documents/output/'
-        self.URL_FEEDBACK = self.URL_API_BASE + '/documents/training/{domain}/'
+        self.URL_PING     = api_base + '/v1/ping'
 
-        self.URL_PREDICT  = self.URL_API_BASE + '/reference/{domain}/{name}'
-        self.URL_STATUS   = self.URL_API_BASE + '/reference/{domain}/{task_id}/status'
-        self.URL_CANCEL   = self.URL_API_BASE + '/reference/{domain}/{task_id}/cancel'
+        self.URL_INPUT    = api_base + '/v1/documents/input/'
+        self.URL_OUTPUT   = api_base + '/v1/documents/output/'
+        self.URL_FEEDBACK = api_base + '/v1/documents/training/{domain}/'
 
-        self.URL_PREDICT_DV  = self.URL_API_BASE + '/prediction/{domain}/{collection}/{name}'
+        self.URL_PREDICT  = api_base + '/v1/reference/{domain}/{name}'
+        self.URL_STATUS   = api_base + '/v1/reference/{domain}/{task_id}/status'
+        self.URL_CANCEL   = api_base + '/v1/reference/{domain}/{task_id}/cancel'
+
+        self.URL_PREDICT_DV  = api_base + '/v1/prediction/{domain}/{collection}/{name}'
 
         self._user_key = user_key or get_secret().get('ilabs_user_key')
         if self._user_key is None:

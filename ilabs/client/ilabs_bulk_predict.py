@@ -61,7 +61,7 @@ def ilabs_bulk_upload(
     output,
     user_key=None,
     strip_labels=False,
-    verbose=0
+    verbose=0,
 ):
     if verbose == 1:
         logging.basicConfig(level=logging.INFO)

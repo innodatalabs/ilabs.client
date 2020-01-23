@@ -1,19 +1,14 @@
-from __future__ import absolute_import, unicode_literals
-
 import logging
 import sys
 from ilabs.client import __version__
 
 
-try:
-    from urllib2 import Request, urlopen, HTTPError
-    from urllib import urlencode
-except ImportError:
-    from urllib.request import Request, urlopen
-    from urllib.parse import urlencode
-    from urllib.error import HTTPError
+from urllib.request import Request, urlopen
+from urllib.parse import urlencode
+from urllib.error import HTTPError
 
 
+MAX_ATTEMPTS = 3
 ILABS_USER_AGENT = 'ILabs API client ' + __version__
 
 
@@ -29,13 +24,13 @@ def send_request(method, url, data=None, headers=None, query=None):
         url = url + '?' + urlencode(query)
         logging.debug('url with query string encoded: %s', url)
 
-    # ugly!
-    if sys.version_info[0] < 3:
-        url = url.encode()
-        if headers is not None:
-            headers = {
-                key.encode(): val.encode()
-                for key, val in headers.items()
-            }
+    for _ in range(MAX_ATTEMPTS-1):
+        try:
+            return urlopen(Request(url, headers=headers, data=data))
+        except HTTPError as err:
+            if 500 <= err.status_code <= 599:
+                logging.error('HTTP 500: will retry')
+                continue
+            raise err
 
     return urlopen(Request(url, headers=headers, data=data))
