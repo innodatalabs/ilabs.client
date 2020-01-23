@@ -28,7 +28,7 @@ def send_request(method, url, data=None, headers=None, query=None):
         try:
             return urlopen(Request(url, headers=headers, data=data))
         except HTTPError as err:
-            if 500 <= err.status <= 599:
+            if 500 <= err.code <= 599:
                 logging.error('HTTP 500: will retry')
                 continue
             raise err
