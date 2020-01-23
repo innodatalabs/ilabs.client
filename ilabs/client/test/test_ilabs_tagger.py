@@ -1,5 +1,5 @@
 import unittest
-import mock
+from unittest import mock
 from ilabs.client import ilabs_predictor, ilabs_tagger
 import lxml.etree as et
 

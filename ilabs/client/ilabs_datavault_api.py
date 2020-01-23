@@ -21,7 +21,7 @@ def noop(*av, **kav): pass
 
 class ILabsDatavaultApi:
 
-    URL_API_BASE = 'https://api.innodatalabs.com/datavault'
+    URL_API_BASE = 'https://ilabs-api.innodata.com/datavault'
 
     def __init__(self, user_key=None, datavault_key=None, timeout=None, user_agent=None, api_base=None):
         self._user_key = user_key or get_secret().get('ilabs_user_key')
