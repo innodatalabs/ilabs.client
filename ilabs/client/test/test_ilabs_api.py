@@ -1,5 +1,5 @@
 import unittest
-import mock
+from unittest import mock
 from ilabs.client import ilabs_api, __version__
 
 
@@ -40,7 +40,7 @@ class TestIlabsApi(unittest.TestCase):
         api._request = mock.Mock(return_value=b'{ "ping": "pong" }')
 
         rc = api.ping()
-        api._request.assert_called_once_with('GET', 'https://api.innodatalabs.com/v1/ping', query=None)
+        api._request.assert_called_once_with('GET', 'https://ilabs-api.innodata.com/v1/ping', query=None)
 
         self.assertEqual(rc, {'ping': 'pong'})
 
@@ -51,7 +51,7 @@ class TestIlabsApi(unittest.TestCase):
         rc = api.upload_input(b'hello')
         api._request.assert_called_once_with(
             'POST',
-            'https://api.innodatalabs.com/v1/documents/input/',
+            'https://ilabs-api.innodata.com/v1/documents/input/',
             b'hello',
             content_type='application/octet-stream', query=None)
 
@@ -60,7 +60,7 @@ class TestIlabsApi(unittest.TestCase):
         rc = api.upload_input(b'hello', filename='XXX')
         api._request.assert_called_with(
             'POST',
-            'https://api.innodatalabs.com/v1/documents/input/XXX',
+            'https://ilabs-api.innodata.com/v1/documents/input/XXX',
             b'hello',
             content_type='application/octet-stream', query=None)
 
@@ -73,7 +73,7 @@ class TestIlabsApi(unittest.TestCase):
         rc = api.download_input('XXX')
         api._request.assert_called_once_with(
             'GET',
-            'https://api.innodatalabs.com/v1/documents/input/XXX',
+            'https://ilabs-api.innodata.com/v1/documents/input/XXX',
             query=None)
 
         self.assertEqual(rc, b'contents')
@@ -83,26 +83,26 @@ class TestIlabsApi(unittest.TestCase):
         api._request = mock.Mock(return_value=b'''\
 {
     "task_id"            : "test-task-id",
-    "task_cancel_url"    : "https://api.innodatalabs.com/v1/cancel/xxx",
-    "task_status_url"    : "https://api.innodatalabs.com/v1/status/xxx",
-    "document_output_url": "https://api.innodatalabs.com/v1/output/123456.bin",
-    "output_filename"    : "https://api.innodatalabs.com/v1/output/yyyy"
+    "task_cancel_url"    : "https://ilabs-api.innodata.com/v1/cancel/xxx",
+    "task_status_url"    : "https://ilabs-api.innodata.com/v1/status/xxx",
+    "document_output_url": "https://ilabs-api.innodata.com/v1/output/123456.bin",
+    "output_filename"    : "https://ilabs-api.innodata.com/v1/output/yyyy"
 }
 ''')
 
         rc = api.predict(domain='test-domain', filename='123456.bin')
         api._request.assert_called_once_with(
             'GET',
-            'https://api.innodatalabs.com/v1/reference/test-domain/123456.bin',
+            'https://ilabs-api.innodata.com/v1/reference/test-domain/123456.bin',
             query=None
         )
 
         self.assertEqual(rc, {
     "task_id"            : "test-task-id",
-    "task_cancel_url"    : "https://api.innodatalabs.com/v1/cancel/xxx",
-    "task_status_url"    : "https://api.innodatalabs.com/v1/status/xxx",
-    "document_output_url": "https://api.innodatalabs.com/v1/output/123456.bin",
-    "output_filename"    : "https://api.innodatalabs.com/v1/output/yyyy"
+    "task_cancel_url"    : "https://ilabs-api.innodata.com/v1/cancel/xxx",
+    "task_status_url"    : "https://ilabs-api.innodata.com/v1/status/xxx",
+    "document_output_url": "https://ilabs-api.innodata.com/v1/output/123456.bin",
+    "output_filename"    : "https://ilabs-api.innodata.com/v1/output/yyyy"
 })
 
     def test_predict_from_datavault(self):
@@ -110,9 +110,9 @@ class TestIlabsApi(unittest.TestCase):
         api._request = mock.Mock(return_value=b'''\
 {
     "task_id"            : "test-task-id",
-    "task_cancel_url"    : "https://api.innodatalabs.com/v1/cancel/xxx",
-    "task_status_url"    : "https://api.innodatalabs.com/v1/status/xxx",
-    "document_output_url": "https://api.innodatalabs.com/datavault/test-collection/123456.bin/prediction",
+    "task_cancel_url"    : "https://ilabs-api.innodata.com/v1/cancel/xxx",
+    "task_status_url"    : "https://ilabs-api.innodata.com/v1/status/xxx",
+    "document_output_url": "https://ilabs-api.innodata.com/datavault/test-collection/123456.bin/prediction",
     "output_filename"    : "123456.bin"
 }
 ''')
@@ -121,7 +121,7 @@ class TestIlabsApi(unittest.TestCase):
 
         api._request.assert_called_once_with(
             'POST',
-            'https://api.innodatalabs.com/v1/prediction/test-domain/test-collection/123456.bin',
+            'https://ilabs-api.innodata.com/v1/prediction/test-domain/test-collection/123456.bin',
             b'',
             query={'input_facet': 'master', 'output_facet': 'prediction'},
             content_type=None
@@ -134,7 +134,7 @@ class TestIlabsApi(unittest.TestCase):
         rc = api.status('test-domain', 'test-job-id')
         api._request.assert_called_once_with(
             'GET',
-            'https://api.innodatalabs.com/v1/reference/test-domain/test-job-id/status',
+            'https://ilabs-api.innodata.com/v1/reference/test-domain/test-job-id/status',
             query=None)
 
         self.assertEqual(rc, {'completed': False})
@@ -146,7 +146,7 @@ class TestIlabsApi(unittest.TestCase):
         rc = api.cancel('test-domain', 'test-job-id')
         api._request.assert_called_once_with(
             'GET',
-            'https://api.innodatalabs.com/v1/reference/test-domain/test-job-id/cancel',
+            'https://ilabs-api.innodata.com/v1/reference/test-domain/test-job-id/cancel',
             query=None)
 
         self.assertEqual(rc, [])
@@ -158,7 +158,7 @@ class TestIlabsApi(unittest.TestCase):
         rc = api.upload_feedback('test-domain', '000-123.xml', b'contents')
         api._request.assert_called_once_with(
             'POST',
-            'https://api.innodatalabs.com/v1/documents/training/test-domain/000-123.xml',
+            'https://ilabs-api.innodata.com/v1/documents/training/test-domain/000-123.xml',
             b'contents',
             content_type='application/octet-stream', query=None)
 
