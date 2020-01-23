@@ -1,5 +1,5 @@
 import unittest
-import mock
+from unittest import mock
 
 from ilabs.client import ilabs_api, ilabs_datavault_api
 from ilabs.client import ilabs_datavault_predictor
@@ -56,7 +56,7 @@ class TestIlabsDatavaultPredictor(unittest.TestCase):
         predictor._datavault._request = mock.Mock()
         predictor.upload(b'some contents', 'test.json', facet='feedback')
         predictor._datavault._request.assert_called_once_with(
-            'POST', 'https://api.innodatalabs.com/datavault/test-collection/test.json/feedback',
+            'POST', 'https://ilabs-api.innodata.com/datavault/test-collection/test.json/feedback',
             b'some contents',
             content_type='application/octet-stream',
             query=None

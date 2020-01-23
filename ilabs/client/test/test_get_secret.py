@@ -1,5 +1,5 @@
 import unittest
-import mock
+from unittest import mock
 from ilabs.client.get_secret import get_secret
 import os
 import contextlib

@@ -1,4 +1,4 @@
-__version__      = '0.3.0'
+__version__      = '1.0.0'
 __url__          = 'https://github.com/innodatalabs/ilabs.client'
 __author__       = 'Mike Kroutikov'
 __author_email__ = 'mkroutikov@innodata.com'
