@@ -1,7 +1,5 @@
-from __future__ import absolute_import, unicode_literals
-
 import unittest
-import mock
+from unittest import mock
 from ilabs.client import ilabs_datavault_api as dv, __version__
 
 
@@ -44,7 +42,7 @@ class TestIlabsApi(unittest.TestCase):
         api._request = mock.Mock(return_value=b'{ "ping": "pong" }')
 
         rc = api.ping()
-        api._request.assert_called_once_with('GET', 'https://api.innodatalabs.com/datavault/ping', query=None)
+        api._request.assert_called_once_with('GET', 'https://ilabs-api.innodata.com/datavault/ping', query=None)
 
         self.assertEqual(rc, {'ping': 'pong'})
 

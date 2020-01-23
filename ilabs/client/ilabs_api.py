@@ -14,7 +14,7 @@ def noop(*av, **kav): pass
 
 class ILabsApi:
 
-    URL_API_BASE = 'https://api.innodatalabs.com/v1'
+    URL_API_BASE = 'https://ilabs-api.innodata.com/v1'
 
     def __init__(self, user_key=None, timeout=None, user_agent=None):
         self.URL_PING     = self.URL_API_BASE + '/ping'
