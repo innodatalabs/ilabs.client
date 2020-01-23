@@ -23,7 +23,7 @@ class ILabsDatavaultApi:
 
     URL_API_BASE = 'https://api.innodatalabs.com/datavault'
 
-    def __init__(self, user_key=None, datavault_key=None, timeout=None, user_agent=None, api_base=None):
+    def __init__(self, user_key=None, datavault_key=None, timeout=None, user_agent=None):
         self._user_key = user_key or get_secret().get('ilabs_user_key')
         self._datavault_key = datavault_key or get_secret().get('ilabs_datavault_key')
         if self._user_key is None or self._datavault_key is None:
@@ -32,7 +32,6 @@ class ILabsDatavaultApi:
         self._timeout = timeout
         if self._timeout is None:
             self._timeout = socket._GLOBAL_DEFAULT_TIMEOUT
-        self._api_base = api_base if api_base is not None else self.URL_API_BASE
 
     def _request(self, method, url, data=None, content_type=None, query=None):
         headers = {
@@ -43,7 +42,6 @@ class ILabsDatavaultApi:
         }
         if content_type is not None:
             headers['Content-Type'] = content_type
-        logging.debug('%s: %s, query=%s', method, url, query)
         res = send_request(method, url,
             data=data,
             headers=headers,
@@ -55,8 +53,9 @@ class ILabsDatavaultApi:
 
         return res.read()
 
-    def _url(self, path):
-        return self._api_base + path
+    @classmethod
+    def _url(cls, path):
+        return cls.URL_API_BASE + path
 
     def _post(self, url, data, content_type=None, query=None):
         return self._request('POST', self._url(url), data, content_type=content_type, query=query)
@@ -116,29 +115,9 @@ class ILabsDatavaultApi:
         out = self._get('/' + collection, query={'resource': 'policy'})
         return json.loads(out.decode())
 
-    def list_documents(self, collection, facet=None, min_mtime=None, max_mtime=None):
-        query = {}
-        if facet is not None:
-            query['facet'] = facet
-
-        if min_mtime is not None:
-            query['min_mtime'] = _to_timestring(min_mtime)
-
-        if max_mtime is not None:
-            query['max_mtime'] =  _to_timestring(max_mtime)
-
-        if len(query) == 0:
-            query = None
-
-        out = json.loads(self._get('/' + collection, query=query).decode())
-        documents = out['documents']
-
-        while 'continuation' in out:
-            query['cursor'] = out['next_cursor']
-            out = json.loads(self._get('/' + collection, query=query).decode())
-            documents.extend(out['documents'])
-
-        return documents
+    def list_documents(self, collection):
+        out = self._get('/' + collection)
+        return json.loads(out.decode())['documents']
 
     def count_documents(self, collection):
         out = self._get('/' + collection, query={'resource': 'count'})
@@ -161,9 +140,6 @@ class ILabsDatavaultApi:
         out = self._get('/' + collection + '/' + name, query={'resource': 'count'})
         return json.loads(out.decode())['count']
 
-def _to_timestring(time_object=None):
-    if time_object is not None:
-        return time_object.strftime("%Y-%m-%dT%H:%M:%S.%f%z")
 
 def main():
     import argparse
