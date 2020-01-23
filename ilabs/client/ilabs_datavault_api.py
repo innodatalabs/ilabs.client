@@ -117,7 +117,7 @@ class ILabsDatavaultApi:
         out = self._get('/' + collection, query={'resource': 'policy'})
         return json.loads(out.decode())
 
-    def list_documents(self, collection, facet=None, min_mtime=None, max_mtime=None):
+    def list_documents(self, collection, facet=None, min_mtime=None, max_mtime=None, show_metadata=False):
         query = {}
         if facet is not None:
             query['facet'] = facet
@@ -127,6 +127,9 @@ class ILabsDatavaultApi:
 
         if max_mtime is not None:
             query['max_mtime'] =  _to_timestring(max_mtime)
+
+        if show_metadata:
+            query['show_metadata'] = True
 
         if len(query) == 0:
             query = None
