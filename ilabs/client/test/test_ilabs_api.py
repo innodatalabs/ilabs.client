@@ -44,6 +44,16 @@ class TestIlabsApi(unittest.TestCase):
 
         self.assertEqual(rc, {'ping': 'pong'})
 
+    def test_ping_api_base(self):
+
+        api = ilabs_api.ILabsApi(user_key=_DUMMY_USER_KEY, api_base='https://xoxo.blah')
+        api._request = mock.Mock(return_value=b'{ "ping": "pong" }')
+
+        rc = api.ping()
+        api._request.assert_called_once_with('GET', 'https://xoxo.blah/v1/ping', query=None)
+
+        self.assertEqual(rc, {'ping': 'pong'})
+
     def test_upload_input(self):
         api = ilabs_api.ILabsApi(user_key=_DUMMY_USER_KEY)
         api._request = mock.Mock(return_value=b'{ "bytes_accepted": 5, "input_filename": "123456.bin" }')

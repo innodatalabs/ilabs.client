@@ -46,6 +46,15 @@ class TestIlabsApi(unittest.TestCase):
 
         self.assertEqual(rc, {'ping': 'pong'})
 
+    def test_ping_api_base(self):
+
+        api = dv.ILabsDatavaultApi(user_key=_DUMMY_USER_KEY, datavault_key=_DUMMY_DATAVAULT_KEY, api_base='https://blah.foo')
+        api._request = mock.Mock(return_value=b'{ "ping": "pong" }')
+
+        rc = api.ping()
+        api._request.assert_called_once_with('GET', 'https://blah.foo/datavault/ping', query=None)
+
+        self.assertEqual(rc, {'ping': 'pong'})
 
 
 if __name__ == '__main__':
